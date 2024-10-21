@@ -1,4 +1,4 @@
-
+-- Create the Students table
 CREATE TABLE Student (
     student_id INT PRIMARY KEY,
     fname VARCHAR2(50) NOT NULL,
@@ -12,6 +12,53 @@ CREATE TABLE Student (
     status VARCHAR(20) CHECK (status IN ('active', 'inactive', 'graduated', 'suspended')),
     enrollment_year INT
 );
+
+
+CREATE TABLE Classroom (
+    building VARCHAR2(50),
+    room VARCHAR2(50),
+    capacity INT CHECK (capacity > 0),
+    PRIMARY KEY (building, room)
+);
+
+CREATE TABLE Material (
+    material_id INT,
+    course_id INT,
+    type VARCHAR2(10),
+    title VARCHAR2(10),
+    PRIMARY KEY (course_id, material_id),
+    CONSTRAINT fk_material_id FOREIGN KEY (course_id)
+        REFERENCES Course(course_id)
+        ON DELETE CASCADE
+)
+
+CREATE TABLE Takes (
+    grade VARCHAR2(10),
+    score INT,
+    student_id INT,
+    exam_id INT,
+    CONSTRAINT fk_takes_student_id FOREIGN KEY (student_id) 
+        REFERENCES Student(student_id) 
+        ON DELETE CASCADE,
+    CONSTRAINT fk_takes_exam_id FOREIGN KEY (exam_id) 
+        REFERENCES Exam(exam_id) 
+        ON DELETE CASCADE
+)
+
+CREATE TABLE Exam (
+    exam_id INT PRIMARY KEY,
+    exam_date DATE,
+    exam_type VARCHAR2(20) CHECK (exam_type IN ('midterm','final','quiz')),
+    grading_date DATE,
+    teacher_id INT,
+    course_id INT,
+    CONSTRAINT fk_exam_teacher_id FOREIGN KEY (teacher_id) 
+        REFERENCES Teacher(teacher_id) 
+        ON DELETE CASCADE,
+    CONSTRAINT fk_exam_course_id FOREIGN KEY (course_id) 
+        REFERENCES Course(course_id) 
+        ON DELETE CASCADE
+)
 
 CREATE TABLE HealthRecord (
     student_id INT,
@@ -103,13 +150,16 @@ CREATE TABLE Class (
         ON DELETE CASCADE
 );
 
-CREATE TABLE specialization(
-    teacher_id INT NOT NULL PRIMARY KEY,
-    subject VARCHAR2(50) NOT NULL,
-    CONSTRAINT fk_specialization_teacher_id FOREIGN KEY (teacher_id)
-        REFERENCES Teacher(teacher_id)
-        ON DELETE CASCADE
-);
+DROP TABLE Student;
+DROP TABLE HealthRecord;
+DROP TABLE Prerequisite;
+DROP TABLE Course;
+DROP TABLE Enrolls;
+DROP TABLE HasParent;
+DROP TABLE Parent;
+DROP TABLE Teacher;
+DROP TABLE Class;
+DROP TABLE Classroom;
 
 INSERT INTO Student (student_id, fname, lname, gender, dob, email, phone_number, address, gpa, status, enrollment_year)
 VALUES (1, 'John', 'Doe', 'M', TO_DATE('2002-05-15', 'YYYY-MM-DD'), 'john.doe@example.com', '555-1234', '123 Main St, City, Country', 3.75, 'active', 2020);
@@ -147,7 +197,15 @@ VALUES (1, 1, 1);
 INSERT INTO Class (course_id, class_id, teacher_id)
 VALUES (1, 2, 2);
 
-INSERT INTO specialization (teacher_id, subject)
-VALUES (1, 'MATH');
+INSERT INTO Classroom (building, room, capacity)
+VALUES ('A', '101', 3);
+INSERT INTO Classroom (building, room, capacity)
+VALUES ('B', '202', 50);
+INSERT INTO Classroom (building, room, capacity)
+VALUES ('C', '303', 25);
 
-check GitHub
+DELETE FROM Student
+WHERE student_id = '123456789';
+
+DELETE FROM Parent
+WHERE parent_id = '987654321';
