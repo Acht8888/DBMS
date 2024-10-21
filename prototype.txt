@@ -150,16 +150,13 @@ CREATE TABLE Class (
         ON DELETE CASCADE
 );
 
-DROP TABLE Student;
-DROP TABLE HealthRecord;
-DROP TABLE Prerequisite;
-DROP TABLE Course;
-DROP TABLE Enrolls;
-DROP TABLE HasParent;
-DROP TABLE Parent;
-DROP TABLE Teacher;
-DROP TABLE Class;
-DROP TABLE Classroom;
+CREATE TABLE Specialization(
+    teacher_id INT NOT NULL PRIMARY KEY,
+    subject VARCHAR2(50) NOT NULL,
+    CONSTRAINT fk_specialization_teacher_id FOREIGN KEY (teacher_id)
+        REFERENCES Teacher(teacher_id)
+        ON DELETE CASCADE
+);
 
 INSERT INTO Student (student_id, fname, lname, gender, dob, email, phone_number, address, gpa, status, enrollment_year)
 VALUES (1, 'John', 'Doe', 'M', TO_DATE('2002-05-15', 'YYYY-MM-DD'), 'john.doe@example.com', '555-1234', '123 Main St, City, Country', 3.75, 'active', 2020);
