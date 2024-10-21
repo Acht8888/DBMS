@@ -19,7 +19,7 @@ CREATE TABLE HealthRecord (
     medical_note VARCHAR2(500),
     allergy VARCHAR2(255),
     PRIMARY KEY (student_id, record_id),
-    CONSTRAINT fk_health_record_student FOREIGN KEY (student_id) 
+    CONSTRAINT fk_health_record_student_id FOREIGN KEY (student_id) 
         REFERENCES Student(student_id) 
         ON DELETE CASCADE
 );
@@ -110,6 +110,89 @@ CREATE TABLE Classroom (
     PRIMARY KEY (building, room)
 );
 
+CREATE TABLE Attends (
+    student_id INT NOT NULL,
+    course_id INT NOT NULL, 
+    class_id INT NOT NULL,
+    PRIMARY KEY (student_id, course_id, class_id),
+    CONSTRAINT fk_attends_student_id FOREIGN KEY (student_id) 
+        REFERENCES Student(student_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_attends_class FOREIGN KEY (course_id, class_id) 
+        REFERENCES Class(course_id, class_id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE Material (
+    material_id INT NOT NULL,
+    course_id INT NOT NULL,
+    type VARCHAR2(10),
+    title VARCHAR2(10),
+    PRIMARY KEY (course_id, material_id),
+    CONSTRAINT fk_material_id FOREIGN KEY (course_id)
+        REFERENCES Course(course_id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE Exam (
+    exam_id INT PRIMARY KEY,
+    exam_date DATE,
+    exam_type VARCHAR2(20) CHECK (exam_type IN ('midterm','final','quiz')),
+    grading_date DATE,
+    teacher_id INT NOT NULL,
+    course_id INT NOT NULL,
+    CONSTRAINT fk_exam_teacher_id FOREIGN KEY (teacher_id) 
+        REFERENCES Teacher(teacher_id) 
+        ON DELETE CASCADE,
+    CONSTRAINT fk_exam_course_id FOREIGN KEY (course_id) 
+        REFERENCES Course(course_id) 
+        ON DELETE CASCADE
+)
+
+CREATE TABLE Takes (
+    grade VARCHAR2(10),
+    score INT,
+    student_id INT NOT NULL,
+    exam_id INT NOT NULL,
+    PRIMARY KEY (student_id, exam_id),
+    CONSTRAINT fk_takes_student_id FOREIGN KEY (student_id) 
+        REFERENCES Student(student_id) 
+        ON DELETE CASCADE,
+    CONSTRAINT fk_takes_exam_id FOREIGN KEY (exam_id) 
+        REFERENCES Exam(exam_id) 
+        ON DELETE CASCADE
+);
+
+CREATE TABLE Schedules (
+    class_id INT NOT NULL,
+    course_id INT NOT NULL,
+    room VARCHAR2(50) NOT NULL,
+    building VARCHAR2(50) NOT NULL,
+    PRIMARY KEY (class_id, course_id, room, building),
+    CONSTRAINT fk_schedules_class FOREIGN KEY (class_id, course_id) 
+        REFERENCES Class(class_id, course_id) 
+        ON DELETE CASCADE,
+    CONSTRAINT fk_schedules_classroom FOREIGN KEY (room, building) 
+        REFERENCES Classroom(room, building)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE Time (
+    class_id INT NOT NULL,
+    course_id INT NOT NULL,
+    room VARCHAR2(50) NOT NULL,
+    building VARCHAR2(50) NOT NULL,
+    day_of_week CHAR(9) CHECK (day_of_week IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')),
+    start_time DATE NOT NULL,
+    end_time DATE NOT NULL,
+    PRIMARY KEY (class_id, course_id, room, building, day_of_week, start_time, end_time),  
+    CONSTRAINT fk_time_schedules FOREIGN KEY (course_id, class_id, room, building) 
+        REFERENCES Schedules(course_id, class_id, room, building) 
+        ON DELETE CASCADE,
+    CONSTRAINT uq_time UNIQUE (room, building, day_of_week, start_time, end_time)
+);
+
+
 DROP TABLE Student;
 DROP TABLE HealthRecord;
 DROP TABLE Prerequisite;
@@ -120,6 +203,7 @@ DROP TABLE Parent;
 DROP TABLE Teacher;
 DROP TABLE Class;
 DROP TABLE Classroom;
+DROP TABLE Schedules;
 
 INSERT INTO Student (student_id, fname, lname, gender, dob, email, phone_number, address, gpa, status, enrollment_year)
 VALUES (1, 'John', 'Doe', 'M', TO_DATE('2002-05-15', 'YYYY-MM-DD'), 'john.doe@example.com', '555-1234', '123 Main St, City, Country', 3.75, 'active', 2020);
@@ -164,8 +248,10 @@ VALUES ('B', '202', 50, 'Lab', 'Occupied');
 INSERT INTO Classroom (building, room, capacity, type, availability)
 VALUES ('C', '303', 25, 'Seminar', 'Available');
 
+INSERT INTO Attends (student_id, class_id) VALUES (1, 101);
+
 DELETE FROM Student
 WHERE student_id = '123456789';
 
 DELETE FROM Parent
-WHERE parent_id = '987654322';
+WHERE parent_id = '987654321';
