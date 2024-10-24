@@ -1,0 +1,353 @@
+--ADMIN
+CREATE USER C##ADMIN IDENTIFIED BY 1234;
+GRANT DBA TO C##ADMIN;
+GRANT CREATE USER TO C##ADMIN;
+GRANT DROP USER TO C##ADMIN;
+
+--TEACHER
+CREATE USER C##TEACHER IDENTIFIED BY 1234;
+GRANT SELECT ON C##ADMIN.STUDENT TO C##TEACHER;
+GRANT CONNECT TO C##TEACHER;
+
+--TEACHERS VIEW THEIR STUDENT
+CREATE OR REPLACE VIEW teacher_1_students AS
+SELECT 
+    t.teacher_id, 
+    t.fname AS teacher_fname, 
+    t.lname AS teacher_lname, 
+    s.student_id, 
+    s.gender,
+    s.DOB,
+    s.email,
+    s.phone_number,
+    s.address,
+    s.GPA,
+    s.status,
+    s.enrollment_year,
+    s.fname AS student_fname, 
+    s.lname AS student_lname, 
+    c.course_id, 
+    c.class_id
+FROM 
+    Teacher t
+JOIN 
+    Class c ON t.teacher_id = c.teacher_id
+JOIN 
+    Attends a ON c.course_id = a.course_id AND c.class_id = a.class_id
+JOIN 
+    Student s ON a.student_id = s.student_id
+WHERE 
+    t.teacher_id = 1;
+GRANT SELECT ON C##ADMIN.teacher_1_students TO C##TEACHER;
+
+DROP VIEW C##ADMIN.teacher_1_students;
+
+
+--TEACHERS TIMETABLE
+CREATE OR REPLACE VIEW teacher_1_timetable AS
+SELECT 
+    t.teacher_id,
+    t.fname || ' ' || t.lname AS teacher_name,
+    c.class_id,
+    co.course_id,
+    co.course_name,
+    co.course_description,
+    ti.room,
+    ti.building,
+    ti.day_of_week,
+    ti.start_time,
+    ti.end_time
+FROM 
+    Teacher t
+JOIN 
+    Class c ON t.teacher_id = c.teacher_id
+JOIN 
+    Course co ON c.course_id = co.course_id
+JOIN
+    Time ti ON c.course_id = ti.course_id AND c.class_id = ti.class_id
+WHERE 
+    t.teacher_id = 1;
+GRANT SELECT ON C##ADMIN.TEACHER_1_TIMETABLE TO C##TEACHER;
+
+DROP VIEW C##ADMIN.TEACHER_1_TIMETABLE;
+
+--TEACHERS UPDATE THEIR PERSONAL INFORMATION
+CREATE OR REPLACE VIEW teacher_1_update_info AS
+SELECT * FROM C##ADMIN.teacher where teacher_id = 1;
+GRANT UPDATE ON teacher_1_update_info TO C##TEACHER;
+
+--TEACHERS VIEW AND UPATE THEIR CLASS SCORE AND GRADE
+CREATE OR REPLACE VIEW teacher_1_view_update_exam AS
+SELECT 
+    c.class_id,   
+    co.course_id,   
+    e.exam_id,
+    s.student_id,
+    s.fname || ' ' || s.lname AS student_name,
+    e.exam_date,
+    e.exam_type,
+    e.grading_date,
+    co.course_name,
+    tk.score,
+    tk.grade
+    
+FROM 
+    Teacher t
+JOIN 
+    Class c ON t.teacher_id = c.teacher_id
+JOIN 
+    Course co ON c.course_id = co.course_id
+JOIN 
+    Exam e ON co.course_id = e.exam_id AND t.teacher_id = e.teacher_id
+JOIN
+    Takes tk ON e.exam_id = tk.exam_id
+JOIN
+    Student s ON tk.student_id = s.student_id
+WHERE 
+    t.teacher_id = 1;
+
+GRANT SELECT ON C##ADMIN.teacher_1_view_update_exam TO C##TEACHER;
+GRANT UPDATE ON C##ADMIN.teacher_1_view_update_exam TO C##TEACHER;
+
+DROP VIEW teacher_1_view_update_exam;
+
+--TEACHERS VIEW ALL CLASSROOM
+CREATE OR REPLACE VIEW teacher_view_all_classroom AS
+SELECT 
+    c.class_id,
+    co.course_id,
+    co.course_name,
+    co.course_description
+FROM
+    class c
+JOIN
+    Course co ON c.course_id = co.course_id;
+GRANT SELECT ON C##ADMIN.teacher_view_all_classroom TO C##TEACHER;
+
+DROP VIEW teacher_view_all_classroom;
+
+--TEACHERS VIEW/UPDATE MATERIAL OF THEIR COURSES
+CREATE OR REPLACE VIEW teacher_1_view_update_material AS
+SELECT
+    co.course_id,
+    m.material_id,
+    co.course_name,
+    co.course_description,
+    m.type,
+    m.title,
+    m.upload_date,
+    m.author
+FROM
+    Teacher t
+JOIN
+    Class c ON t.teacher_id = c.teacher_id
+JOIN
+    Course co ON c.course_id = co.course_id
+JOIN
+    Material m ON co.course_id = m.course_id
+WHERE
+    t.teacher_id = 1;
+
+GRANT SELECT ON C##ADMIN.teacher_1_view_update_material TO C##TEACHER;
+GRANT UPDATE ON C##ADMIN.teacher_1_view_update_material TO C##TEACHER;
+DROP VIEW teacher_1_view_update_material;
+    
+--TEACHERS VIEW ALL COURSES AND COURSES' CLASS
+CREATE OR REPLACE VIEW teacher_view_course_class AS
+SELECT
+    co.course_id,
+    c.class_id,
+    co.course_name,
+    co.course_description
+FROM 
+    Class c
+JOIN   
+    Course co ON c.course_id = co.course_id;
+
+    
+    
+--STUDENT
+CREATE USER C##STUDENT IDENTIFIED BY 1234;
+GRANT CONNECT TO C##STUDENT;
+
+--STUDENTS VIEW GRADE/SCORE OF THEIR CLASS
+CREATE OR REPLACE VIEW student_view_grade_score AS
+SELECT
+    s.student_id,
+    s.fname || ' ' || s.lname AS student_name,
+    e.exam_type,
+    e.exam_date,
+    tk.grade,
+    tk.score
+FROM
+    Student s
+JOIN
+    Takes tk ON s.student_id = tk.student_id
+JOIN
+    Exam e ON tk.exam_id = e.exam_id;
+    
+GRANT SELECT ON C##ADMIN.student_view_grade_score TO C##STUDENT;
+
+DROP VIEW C##ADMIN.student_view_grade_score;
+
+--STUDENTS VIEW THEIR OWN SCORE
+CREATE OR REPLACE VIEW student_1_view_grade_score AS
+SELECT
+    s.student_id,
+    s.fname || ' ' || s.lname AS student_name,
+    e.exam_type,
+    e.exam_date,
+    tk.grade,
+    tk.score
+FROM
+    Student s
+JOIN
+    Takes tk ON s.student_id = tk.student_id
+JOIN
+    Exam e ON tk.exam_id = e.exam_id
+WHERE
+    s.student_id = 1;
+    
+GRANT SELECT ON C##ADMIN.student_1_view_grade_score TO C##STUDENT;
+
+DROP VIEW C##ADMIN.student_1_view_grade_score;
+
+--STUDENTS VIEW ALL TEACHER IN A COURSE
+CREATE OR REPLACE VIEW student_view_teacher_in_course AS
+SELECT 
+    co.course_id,
+    c.class_id,
+    co.course_name,
+    co.course_description,
+    t.fname || ' ' || t.lname AS teacher_name,
+    t.gender,
+    t.email
+FROM
+    Teacher t
+JOIN
+    Class c ON t.teacher_id = c.teacher_id
+JOIN
+    Course co ON c.course_id = co.course_id;
+
+GRANT SELECT ON C##ADMIN.student_view_teacher_in_course TO C##STUDENT;
+
+DROP VIEW C##ADMIN.student_view_teacher_in_course;
+
+
+--STUDENTS VIEW THEIR OWN HEALTHRECORD
+CREATE OR REPLACE VIEW student_1_healthrecord AS
+SELECT  
+    s.student_id,
+    s.fname || ' ' || s.lname AS student_name,
+    he.record_id,
+    he.medical_note,
+    he.allergy
+FROM
+    Student s
+JOIN
+    Healthrecord he ON s.student_id = he.student_id
+WHERE
+    s.student_id = 1;
+
+GRANT SELECT ON C##ADMIN.student_1_healthrecord TO C##STUDENT;
+
+DROP VIEW C##ADMIN.student_1_healthrecord ;
+
+
+--STUDENTS VIEW THEIR PARENTS
+CREATE OR REPLACE VIEW student_1_view_parent AS
+SELECT 
+    pa.parent_id,
+    pa.fname || ' ' || pa.lname AS parent_name,
+    pa.gender,
+    pa.dob,
+    pa.relationship,
+    pa.email,
+    pa.phone_number,
+    pa.address
+FROM
+    Student s
+JOIN
+    Hasparent hp ON s.student_id = hp.student_id
+JOIN
+    Parent pa ON hp.parent_id = pa.parent_id
+WHERE 
+    s.student_id =1;
+    
+GRANT SELECT ON C##ADMIN.student_1_view_parent TO C##STUDENT;
+
+DROP VIEW C##ADMIN.student_1_view_parent;
+
+
+--STUDENTS VIEW COURSES AND COURSES'CLASSES
+CREATE OR REPLACE VIEW student_view_course_class AS
+SELECT
+    co.course_id,
+    c.class_id,
+    co.course_name,
+    co.course_description
+FROM 
+    Class c
+JOIN   
+    Course co ON c.course_id = co.course_id;
+    
+GRANT SELECT ON C##ADMIN.student_view_course_class TO C##STUDENT;
+
+DROP VIEW C##ADMIN.student_view_course_class;
+
+--STUDENT VIEW THEIR COURSE MATERIAL
+CREATE OR REPLACE VIEW student_1_view_material AS
+SELECT
+    co.course_id,
+    m.material_id,
+    co.course_name,
+    co.course_description,
+    m.type,
+    m.title,
+    m.upload_date,
+    m.author
+FROM
+    Student s
+JOIN
+    Enrolls en ON s.student_id = en.student_id
+JOIN
+    Course co ON en.course_id = co.course_id
+JOIN
+    Material m ON co.course_id = m.course_id
+WHERE
+    s.student_id = 1;
+
+GRANT SELECT ON C##ADMIN.student_1_view_material TO C##STUDENT;
+
+DROP VIEW C##ADMIN.student_1_view_material;
+
+
+--STUDENT TIMETABLE
+CREATE OR REPLACE VIEW student_1_timetable AS
+SELECT 
+    a.class_id,
+    co.course_id,
+    co.course_name,
+    co.course_description,
+    ti.room,
+    ti.building,
+    ti.day_of_week,
+    ti.start_time,
+    ti.end_time
+FROM 
+    Student s
+JOIN 
+    Attends a ON s.student_id = a.student_id
+JOIN
+    Course co ON a.course_id = co.course_id
+JOIN
+    Time ti ON co.course_id = ti.course_id AND a.class_id = ti.class_id
+WHERE 
+    s.student_id = 1;
+
+GRANT SELECT ON C##ADMIN.student_1_timetable TO C##STUDENT;
+    
+DROP VIEW C##ADMIN.student_1_timetable;
+    
+    
+
