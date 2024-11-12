@@ -156,7 +156,7 @@ CREATE TABLE Exam (
 );
 
 CREATE TABLE Takes (
-    status VARCHAR2(20) CHECK (status IN ('Pending', 'Completed', 'Absent', 'Graded')), -- NEW --
+    status VARCHAR2(20) CHECK (status IN ('Pending', 'Completed', 'Absent', 'Graded')),
     grade VARCHAR2(10) CHECK (grade IN ('A', 'B', 'C', 'D', 'E', 'F')),
     score INT CHECK (score BETWEEN 0 AND 100),
     student_id INT NOT NULL,
