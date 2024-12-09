@@ -1,4 +1,4 @@
--- Insert Students --
+200-- Insert Students --
 INSERT INTO Student (student_id, fname, lname, gender, dob, email, phone_number, address, gpa, status, enrollment_year)
 VALUES (1, 'Nguyen', 'Van A', 'M', TO_DATE('2005-05-15', 'YYYY-MM-DD'), 'nguyenvana@gmail.com', '0123456789', '123 Duong A, Ha Noi', 3.5, 'active', 2024);
 INSERT INTO Student (student_id, fname, lname, gender, dob, email, phone_number, address, gpa, status, enrollment_year)
