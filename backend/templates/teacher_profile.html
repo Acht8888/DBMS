@@ -10,11 +10,7 @@
 
     <header>
         <h1>Personal Information</h1>
-        {% if teacher %}
-            <p>Welcome, {{ teacher.fname }} {{ teacher.lname }}</p>
-        {% else %}
-            <p>Welcome!</p>
-        {% endif %}
+        <p> Welcome! Teacher </p>
     </header>
 
     <!-- Navigation Bar -->
@@ -22,9 +18,9 @@
         <a href="/teacherHome">Home</a> <!-- Button to go back to home -->
         <a href="/teacher_profile">Personal Information</a>
         <a href="/teacher_course">Courses</a>
-        <a href="/students">Students</a>
-        <a href="/timetable">Timetable</a>
-        <a href="/study-materials">Study Materials</a>
+        <a href="/teacher_student">Students</a>
+        <a href="/teacher_timetable">Timetable</a>
+        <a href="/teacher_material">Study Materials</a>
         <a href="/logout">Logout</a>
     </nav>
 

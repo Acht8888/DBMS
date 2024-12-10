@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students - School Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher_student.css') }}">
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <h1>Students</h1>
+        <p> Welcome! Teacher </p>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <a href="/teacherHome">Home</a>
+        <a href="/teacher_profile">Personal Information</a>
+        <a href="/teacher_course">Courses</a>
+        <a href="/teacher_student">Students</a>
+        <a href="/teacher_timetable">Timetable</a>
+        <a href="/teacher_material">Study Materials</a>
+        <a href="/logout">Logout</a>
+    </nav>
+
+    <!-- Students Table -->
+    <div class="students-container">
+        {% if students %}
+        <div class="table-responsive">
+            <table class="students-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Gender</th>
+                        <th>Date of Birth</th>
+                        <th>Email</th>
+                        <th>Phone Number</th>
+                        <th>Address</th>
+                        <th>GPA</th>
+                        <th>Status</th>
+                        <th>Enrollment Year</th>
+                        <th>Course ID</th>
+                        <th>Class ID</th>
+                        <th>Course Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ student.student_id }}</td>
+                        <td>{{ student.fname }}</td>
+                        <td>{{ student.lname }}</td>
+                        <td>{{ student.gender }}</td>
+                        <td>{{ student.dob.strftime('%d/%m/%Y') }} </td>
+                        <td>{{ student.email }}</td>
+                        <td>{{ student.phone_number }}</td>
+                        <td>{{ student.address }}</td>
+                        <td>{{ student.gpa }}</td>
+                        <td>{{ student.status }}</td>
+                        <td>{{ student.enrollment_year }}</td>
+                        <td>{{ student.course_id }}</td>
+                        <td>{{ student.class_id }}</td>
+                        <td>{{ student.course_name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No students found.</p>
+        {% endif %}
+    </div>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2024 School Management System</p>
+    </footer>
+
+</body>
+</html>

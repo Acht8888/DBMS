@@ -235,11 +235,6 @@ def studymaterials():
 
 
 
-
-
-
-
-
 # Route trang home cho giáo viên
 @app.route('/teacherHome')
 def teacherHome():
@@ -275,6 +270,8 @@ def teacher_Profile():
 def teacher_course():
     if 'username' in session:
         # Lấy tất cả các bản ghi trong bảng Course
+        username = session['username']
+        
         courses = db.session.execute(
             text("SELECT * FROM Course")
         ).mappings().fetchall()
@@ -285,21 +282,101 @@ def teacher_course():
     else:
         return redirect('/')
 
-@app.route('/teacher_class')
-def teacher_class():
+@app.route('/teacher_timetable')
+def teacher_timetable():
     if 'username' in session:
-        # Lấy tất cả các bản ghi trong bảng Class
-        classes = db.session.execute(
-            text("SELECT * FROM Class")
+        username = session['username']
+        
+        # Lấy thông tin giáo viên
+        teacher = db.session.execute(
+            text("SELECT teacher_id FROM teacher WHERE username = :username"),
+            {'username': username}
+        ).mappings().fetchone()
+
+        if not teacher:
+            return render_template('teacher_timetable.html', error="Không tìm thấy thông tin giáo viên.")
+
+        # Lấy thời khóa biểu của giáo viên
+        timetable = db.session.execute(
+            text(""" 
+                SELECT 
+                    t.teacher_id,
+                    t.fname || ' ' || t.lname AS teacher_name,
+                    co.course_id,
+                    co.course_name,
+                    c.class_id,
+                    ti.room,
+                    ti.building,
+                    ti.day_of_week,
+                    TO_CHAR(ti.start_time, 'HH24:MI:SS') AS start_time,
+                    TO_CHAR(ti.end_time, 'HH24:MI:SS') AS end_time
+                FROM 
+                    Teacher t
+                JOIN 
+                    Class c ON t.teacher_id = c.teacher_id
+                JOIN 
+                    Course co ON c.course_id = co.course_id
+                JOIN
+                    Time ti ON c.course_id = ti.course_id AND c.class_id = ti.class_id
+                WHERE 
+                    t.teacher_id = :teacher_id
+            """),
+            {'teacher_id': teacher['teacher_id']}
         ).mappings().fetchall()
-        if classes:
-            return render_template('teacher_class.html', username=session['username'], classes=classes)
-        else:
-            return render_template('teacher_class.html', error="Không tìm thấy lớp học.")
+
+        return render_template('teacher_timetable.html', timetable=timetable)
     else:
         return redirect('/')
 
+@app.route('/teacher_student')
+def teacher_student():
+    if 'username' in session:
+        username = session['username']
+        
+        # Lấy thông tin giáo viên
+        teacher = db.session.execute(
+            text("SELECT teacher_id FROM teacher WHERE username = :username"),
+            {'username': username}
+        ).mappings().fetchone()
 
+        if not teacher:
+            return render_template('teacher_student.html', error="Không tìm thấy thông tin giáo viên.")
+
+        # Lấy danh sách sinh viên mà giáo viên đang dạy
+        students = db.session.execute(
+            text("""
+                SELECT 
+                    s.student_id, s.fname, s.lname, s.gender, s.dob, s.email, 
+                    s.phone_number, s.address, s.gpa, s.status, s.enrollment_year,
+                    c.course_id, c.class_id, co.course_name
+                FROM 
+                    Student s
+                JOIN 
+                    Attends a ON s.student_id = a.student_id
+                JOIN 
+                    Class c ON a.course_id = c.course_id AND a.class_id = c.class_id
+                JOIN 
+                    Course co ON c.course_id = co.course_id
+                WHERE 
+                    c.teacher_id = :teacher_id
+            """),
+            {'teacher_id': teacher['teacher_id']}
+        ).mappings().fetchall()
+
+        return render_template('teacher_student.html', students=students)
+    else:
+        return redirect('/')
+    
+@app.route('/teacher_material')
+def teacher_material():
+    if 'username' in session:
+        username = session['username']
+        materials = db.session.execute(
+            text("SELECT * FROM Material")
+        ).mappings().fetchall()
+        return render_template('teacher_material.html', username=username, materials=materials)
+    else:
+        return redirect('/')
 
 
 
