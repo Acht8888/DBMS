@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream:website/templates/teacherHome.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,3 +35,39 @@
 
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - School Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/teacherHome.css') }}">
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <h1>School Management System</h1>
+        <p>Welcome, {{ username }}</p>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <a href="/teacherHome">Home</a> <!-- Button to go back to home -->
+        <a href="/teacher_profile">Personal Information</a>
+        <a href="/teacher_course">Courses</a>
+        <a href="/students">Students</a>
+        <a href="/timetable">Timetable</a>
+        <a href="/study-materials">Study Materials</a>
+        <a href="/logout">Logout</a>
+    </nav>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2024 School Management System</p>
+    </footer>
+
+</body>
+</html>
+>>>>>>> Stashed changes:backend/templates/teacherHome.html
