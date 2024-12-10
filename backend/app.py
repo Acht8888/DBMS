@@ -72,8 +72,21 @@ def adminHome():
 # Updated Route to Manage Students with Flash Messages
 @app.route('/adminStudent', methods=['GET'])
 def adminStudent():
-    students = Student.query.all()
-    return render_template('admin/adminStudent.html', students=students)
+    # Get the 'page' query parameter; default to 1 if not provided or invalid
+    try:
+        page = int(request.args.get('page', 1))
+        if page < 1:
+            raise ValueError
+    except ValueError:
+        page = 1
+
+    per_page = 5  # Number of students per page
+
+    # Paginate the query
+    pagination = Student.query.order_by(Student.student_id).paginate(page=page, per_page=per_page, error_out=False)
+    students = pagination.items
+
+    return render_template('admin/adminStudent.html', students=students, pagination=pagination)
 
 # New Route to handle adding students
 @app.route('/addStudent', methods=['POST'])

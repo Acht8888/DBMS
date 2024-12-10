@@ -151,21 +151,23 @@
                         <td class="px-4 py-2 border-b">{{ student.phone_number }}</td>
                         <td class="px-4 py-2 border-b text-center">
                             <!-- Edit Button -->
-                            <button onclick='handleEditClick(event, {
-                                student_id: "{{ student.student_id }}",
-                                username: "{{ student.username }}",
-                                fname: "{{ student.fname | e }}",
-                                lname: "{{ student.lname | e }}",
-                                gender: "{{ student.gender }}",
-                                dob: "{{ student.dob }}",
-                                email: "{{ student.email | e }}",
-                                phone_number: "{{ student.phone_number | e }}",
-                                address: "{{ student.address | e }}",
-                                gpa: "{{ student.gpa }}",
-                                status: "{{ student.status }}",
-                                enrollment_year: "{{ student.enrollment_year }}"
-                            })' class="text-yellow-500 hover:underline mr-2">
-                                Edit
+                            <button 
+                            onclick="handleEditClick(event, this)" 
+                            class="text-yellow-500 hover:underline mr-2"
+                            data-student-id="{{ student.student_id }}"
+                            data-username="{{ student.username }}"
+                            data-fname="{{ student.fname | e }}"
+                            data-lname="{{ student.lname | e }}"
+                            data-gender="{{ student.gender }}"
+                            data-dob="{{ student.dob.strftime('%Y-%m-%d') if student.dob else '' }}"
+                            data-email="{{ student.email | e }}"
+                            data-phone-number="{{ student.phone_number | e }}"
+                            data-address="{{ student.address | e }}"
+                            data-gpa="{{ student.gpa }}"
+                            data-status="{{ student.status }}"
+                            data-enrollment-year="{{ student.enrollment_year }}"
+                            >
+                            Edit
                             </button>
                             <!-- Delete Form -->
                             <form action="{{ url_for('deleteStudent') }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this student?');">
@@ -179,6 +181,38 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        <!-- Pagination Controls -->
+        {% if pagination.pages > 1 %}
+            <div class="mt-4 flex justify-center items-center space-x-2">
+                <!-- Previous Page Link -->
+                {% if pagination.has_prev %}
+                    <a href="{{ url_for('adminStudent', page=pagination.prev_num) }}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Previous</a>
+                {% else %}
+                    <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded">Previous</span>
+                {% endif %}
+
+                <!-- Page Number Links -->
+                {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if p %}
+                        {% if p == pagination.page %}
+                            <span class="px-3 py-1 bg-blue-500 text-white rounded">{{ p }}</span>
+                        {% else %}
+                            <a href="{{ url_for('adminStudent', page=p) }}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">{{ p }}</a>
+                        {% endif %}
+                    {% else %}
+                        <span class="px-3 py-1 text-gray-500">...</span>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Next Page Link -->
+                {% if pagination.has_next %}
+                    <a href="{{ url_for('adminStudent', page=pagination.next_num) }}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Next</a>
+                {% else %}
+                    <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded">Next</span>
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 
     <!-- Add Student Popup Form -->
