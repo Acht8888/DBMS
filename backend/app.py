@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text  # Import text để sử dụng với SQL thuần túy
 
 app = Flask(__name__)
 app.debug = True
@@ -10,63 +11,34 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'oracle+cx_oracle://C##HUYLAB:p123@192.1
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-# Định nghĩa bảng Users (Model)
-class User(db.Model):
-    __tablename__ = 'users'
-    username = db.Column(db.String(50), primary_key=True)
-    password = db.Column(db.String(100), nullable=False)
-    user_role = db.Column(db.String(20), nullable=False)
-    # Thêm CheckConstraint vào __table_args__
-    __table_args__ = (
-        db.CheckConstraint("user_role IN ('admin', 'student', 'teacher')", name="check_user_role"),
-    )
-    student = db.relationship('Student', backref='user', uselist=False)
 
-    def __repr__(self):
-        return f"<User {self.username}, Role: {self.user_role}>"
-
-# Định nghĩa bảng Student (Model)
-class Student(db.Model):
-    __tablename__ = 'student'
-    username = db.Column(db.String(50), db.ForeignKey('users.username'))
-    student_id = db.Column(db.Integer, primary_key=True)
-    fname = db.Column(db.String(30), nullable=False)
-    lname = db.Column(db.String(30), nullable=False)
-    gender = db.Column(db.String(1), nullable=False)
-    dob = db.Column(db.Date, nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    phone_number = db.Column(db.String(15), unique=True, nullable=False)
-    address = db.Column(db.String(255), nullable=True)
-    gpa = db.Column(db.Numeric(3, 2), nullable=True)
-    status = db.Column(db.String(20), nullable=False)
-    enrollment_year = db.Column(db.Integer, nullable=False)
-
-    def __repr__(self):
-        return f'<Student {self.username}>'    
-
+# Route trang đăng nhập
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         
-        # Kiểm tra tài khoản trong cơ sở dữ liệu
-        user = User.query.filter_by(username=username, password=password).first()
+        # Sử dụng truy vấn SQL với text() và mappings()
+        result = db.session.execute(
+            text("SELECT username, user_role FROM users WHERE username = :username AND password = :password"),
+            {'username': username, 'password': password}
+        ).mappings().fetchone()
 
-        if user:
-            # Nếu đăng nhập thành công, lưu username vào session
-            session['username'] = username
+        if result:
+            # Đăng nhập thành công
+            session['username'] = result['username']
             
-            # Kiểm tra role của user và chuyển hướng đến trang tương ứng
-            if user.user_role == 'student':
-                return redirect('/home')  # Trang dành cho học sinh
-            elif user.user_role == 'teacher':
-                return redirect('/teacherHome')  # Trang dành cho giáo viên
-            elif user.user_role == 'admin':
-                return redirect('/adminHome')  # Trang dành cho admin
+            # Kiểm tra role và chuyển hướng
+            if result['user_role'] == 'student':
+                return redirect('/home')
+            elif result['user_role'] == 'teacher':
+                return redirect('/teacherHome')
+            elif result['user_role'] == 'admin':
+                return redirect('/adminHome')
 
         else:
-            # Hiển thị thông báo lỗi khi đăng nhập không thành công
+            # Đăng nhập thất bại
             return render_template('index.html', error="Tài khoản hoặc mật khẩu không đúng")
 
     return render_template('index.html')
@@ -79,45 +51,18 @@ def home():
     else:
         return redirect('/')
 
-# Route trang home cho teacher
-@app.route('/teacherHome')
-def teacherHome():
-    if 'username' in session:
-        return render_template('teacherHome.html', username=session['username'])
-    else:
-        return redirect('/')
-
-# Route trang home cho teacher
-@app.route('/adminHome')
-def adminHome():
-    if 'username' in session:
-        return render_template('adminHome.html', username=session['username'])
-    else:
-        return redirect('/')
-
+# Route trang profile cho sinh viên
 @app.route('/profile')
 def profile():
     if 'username' in session:
         username = session['username']
-        print("Username trong session:", username)  # Debug
         
-        # Lấy tất cả các bản ghi trong bảng Student
-        students = Student.query.all()
-        
-        # In ra các thông tin sinh viên từ bảng Student
-        print("Dữ liệu trong bảng Student:")
-        for student in students:
-            print(f"Student ID: {student.student_id}, "
-                  f"Username: {student.username}, "
-                  f"Full Name: {student.fname} {student.lname}, "
-                  f"Email: {student.email}, "
-                  f"Phone: {student.phone_number}, "
-                  f"GPA: {student.gpa}, "
-                  f"Status: {student.status}, "
-                  f"Enrollment Year: {student.enrollment_year}")
+        # Lấy thông tin sinh viên
+        student = db.session.execute(
+            text("SELECT * FROM student WHERE username = :username"),
+            {'username': username}
+        ).mappings().fetchone()
 
-        # Tìm sinh viên theo username trong session
-        student = Student.query.filter_by(username=username).first()
         if student:
             return render_template('profile.html', student=student)
         else:
@@ -125,7 +70,182 @@ def profile():
     else:
         return redirect('/')
 
+# Route trang healthrecord cho sinh viên
+@app.route('/healthrecord')
+def healthrecord_student():
+    if 'username' in session:
+        username = session['username']
+        
+        # Lấy thông tin sinh viên
+        student = db.session.execute(
+            text("SELECT * FROM student WHERE username = :username"),
+            {'username': username}
+        ).mappings().fetchone()
 
+        if student:
+            # Lấy health record của sinh viên
+            health_records = db.session.execute(
+                text("SELECT * FROM healthrecord WHERE student_id = :student_id"),
+                {'student_id': student['student_id']}
+            ).mappings().fetchall()
+
+            return render_template('healthrecord.html', student=student, health_records=health_records)
+        else:
+            return render_template('healthrecord.html', error="Không tìm thấy thông tin sinh viên.")
+    else:
+        return redirect('/')
+
+@app.route('/parentinfo')
+def parentinfo():
+    if 'username' in session:
+        # Lấy username từ session
+        username = session['username']
+        
+        # Lấy thông tin sinh viên (student_id, fname, lname) từ bảng Student dựa vào username
+        student = db.session.execute(
+            text("""
+                SELECT student_id, fname, lname 
+                FROM student 
+                WHERE username = :username
+            """),
+            {'username': username}
+        ).mappings().fetchone()
+
+        if not student:
+            # Nếu không tìm thấy thông tin sinh viên, hiển thị thông báo lỗi
+            return render_template('parentinfo.html', error="Không tìm thấy thông tin sinh viên.")
+
+        # Truy vấn thông tin phụ huynh dựa trên student_id
+        parents = db.session.execute(
+            text("""
+                SELECT 
+                    p.parent_id, p.fname, p.lname, p.gender, p.dob, p.relationship, 
+                    p.email, p.phone_number, p.address
+                FROM 
+                    Parent p
+                JOIN 
+                    HasParent hp ON p.parent_id = hp.parent_id
+                WHERE 
+                    hp.student_id = :student_id
+            """),
+            {'student_id': student['student_id']}
+        ).mappings().fetchall()
+
+        # Trả dữ liệu sinh viên và phụ huynh cho template
+        return render_template('parentinfo.html', student=student, parents=parents)
+    else:
+        # Nếu người dùng chưa đăng nhập, chuyển hướng đến trang đăng nhập
+        return redirect('/')
+
+@app.route('/courses')
+def courses():
+    if 'username' in session:
+        # Lấy username từ session
+        username = session['username']
+
+        # Lấy thông tin sinh viên (student_id)
+        student = db.session.execute(
+            text("SELECT student_id, fname, lname FROM student WHERE username = :username"),
+            {'username': username}
+        ).mappings().fetchone()
+
+        if not student:
+            return render_template('courses.html', error="Không tìm thấy thông tin sinh viên.")
+
+        # Lấy danh sách các khóa học mà sinh viên đã tham gia
+        courses = db.session.execute(
+            text("""
+                SELECT 
+                    c.course_id,
+                    c.course_name,
+                    c.course_description,
+                    cl.class_id,
+                    t.fname AS teacher_fname,
+                    t.lname AS teacher_lname
+                FROM 
+                    Attends a
+                JOIN 
+                    Class cl ON a.course_id = cl.course_id AND a.class_id = cl.class_id
+                JOIN 
+                    Course c ON cl.course_id = c.course_id
+                JOIN 
+                    Teacher t ON cl.teacher_id = t.teacher_id
+                WHERE 
+                    a.student_id = :student_id
+            """),
+            {'student_id': student['student_id']}
+        ).mappings().fetchall()
+        
+        print("Courses: ", courses)
+
+        # Truyền dữ liệu sang template
+        return render_template('course.html', student=student, courses=courses)
+
+    else:
+        return redirect('/')
+
+@app.route('/studymaterials')
+def studymaterials():
+    if 'username' in session:
+        # Lấy username từ session
+        username = session['username']
+
+        # Lấy thông tin sinh viên (student_id)
+        student = db.session.execute(
+            text("SELECT student_id, fname, lname FROM student WHERE username = :username"),
+            {'username': username}
+        ).mappings().fetchone()
+
+        if not student:
+            return render_template('studymaterial.html', error="Không tìm thấy thông tin sinh viên.")
+
+        # Lấy danh sách các khóa học mà sinh viên đã tham gia
+        materials_query = db.session.execute(
+        text("""
+            SELECT 
+                m.material_id,
+                m.type,
+                m.title,
+                m.upload_date,
+                m.author,
+                c.course_name,
+                s.fname AS student_fname,
+                s.lname AS student_lname
+            FROM 
+                Material m
+            JOIN 
+                Course c ON m.course_id = c.course_id
+            JOIN 
+                Attends a ON a.course_id = c.course_id
+            JOIN 
+                Student s ON a.student_id = s.student_id
+            ORDER BY 
+                c.course_name, m.upload_date DESC
+        """)
+    )
+        materials = materials_query.fetchall()
+
+        # Truyền dữ liệu sang template
+        return render_template('studymaterial.html', student=student, materials=materials)
+
+    else:
+        return redirect('/')
+
+# Route trang home cho giáo viên
+@app.route('/teacherHome')
+def teacherHome():
+    if 'username' in session:
+        return render_template('teacherHome.html', username=session['username'])
+    else:
+        return redirect('/')
+
+# Route trang home cho admin
+@app.route('/adminHome')
+def adminHome():
+    if 'username' in session:
+        return render_template('adminHome.html', username=session['username'])
+    else:
+        return redirect('/')
 
 # Route đăng xuất
 @app.route('/logout')

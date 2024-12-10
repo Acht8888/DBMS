@@ -1,0 +1,61 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    display: flex; /* Thiết lập Flexbox cho body */
+    flex-direction: column; /* Đặt chiều của các phần tử là dọc */
+    justify-content: space-evenly;
+}
+
+header {
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+/* Parent Information Container Styling */
+.parent-info-container {
+    width: 80%;
+    margin: 5% auto;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Parent Information Table Styling */
+.parent-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.parent-info-table th, .parent-info-table td {
+    text-align: left; /* Căn chữ sang trái */
+    padding: 12px; /* Khoảng cách bên trong ô */
+    border-bottom: 1px solid #ddd; /* Đường viền dưới mỗi hàng */
+}
+
+.parent-info-table th {
+    background-color: #f2f2f2; /* Màu nền của tiêu đề */
+    color: #333; /* Màu chữ của tiêu đề */
+    font-weight: bold; /* Đậm chữ cho tiêu đề */
+}
+
+.parent-info-table td {
+    color: #555; /* Màu chữ nội dung */
+}
+
+/* Styling for No Records Message */
+.parent-info-container p {
+    text-align: center; /* Căn giữa chữ */
+    font-size: 1.2rem; /* Tăng kích thước chữ */
+    color: #777; /* Màu xám nhạt */
+    font-style: italic; /* In nghiêng */
+    margin-top: 20px; /* Khoảng cách trên */
+}

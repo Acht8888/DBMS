@@ -1,11 +1,8 @@
 body {
     font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f9;
-    display: flex; /* Thiết lập Flexbox cho body */
-    flex-direction: column; /* Đặt chiều của các phần tử là dọc */
-    justify-content: space-evenly;
 }
 
 header {
@@ -15,8 +12,7 @@ header {
     padding: 20px;
 }
 
-/* Health Record Container */
-.health-record-container {
+.course-container {
     width: 80%;
     margin: 5% auto;
     background-color: white;
@@ -29,37 +25,33 @@ header {
     flex-direction: column;
 }
 
-/* Health Record Table */
-.health-record-table {
+.course-container h2 {
+    text-align: center;
+    color: #333;
+}
+
+.course-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
 
-.health-record-table th, .health-record-table td {
+.course-table th, .course-table td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
 
-.health-record-table th {
+.course-table th {
     background-color: #f2f2f2;
     color: #333;
+    font-weight: bold;
 }
 
-.health-record-table td {
+.course-table td {
     color: #555;
 }
 
-/* Style for no records */
-.health-record-table .no-records {
-    text-align: center;
-    padding: 20px;
-    font-style: italic;
-    color: #777;
-}
-
-/* Footer */
 footer {
     background-color: #333;
     color: white;

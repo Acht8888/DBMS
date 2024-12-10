@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Information - Student</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/healthrecord.css') }}">
+    <title>Courses Information</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/studymaterial.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 </head>
 <body>
 
     <header>
-        <h1>Health Records</h1>
+        <h1>Study Materials</h1>
         {% if student %}
             <p>Welcome, {{ student.fname }} {{ student.lname }}</p>
         {% else %}
@@ -20,7 +20,7 @@
 
     <!-- Navigation Bar -->
     <nav>
-        <a href="/home">Home</a> <!-- Button to go back to home -->
+        <a href="/home">Home</a>
         <a href="/profile">Personal Information</a>
         <a href="/grades">View Grades</a>
         <a href="/healthrecord">Health Records</a>
@@ -31,33 +31,36 @@
         <a href="/logout">Logout</a>
     </nav>
 
-    <!-- Health Record Container -->
-    <div class="health-record-container">
-        <!-- Health Records Section -->
-        {% if health_records %}
-            <table class="health-record-table">
+    <!-- Study Materials -->
+    <div class="material-container">
+        {% if materials %}
+            <h3>Available Study Materials</h3>
+            <table class="material-table">
                 <thead>
                     <tr>
-                        <th>Record ID</th>
-                        <th>Medical Note</th>
-                        <th>Allergy</th>
+                        <th>Course Name</th>
+                        <th>Material Type</th>
+                        <th>Title</th>
+                        <th>Upload Date</th>
+                        <th>Author</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for record in health_records %}
+                    {% for material in materials %}
                         <tr>
-                            <td>{{ record.record_id }}</td>
-                            <td>{{ record.medical_note }}</td>
-                            <td>{{ record.allergy }}</td>
+                            <td>{{ material.course_name }}</td>
+                            <td>{{ material.type }}</td>
+                            <td>{{ material.title }}</td>
+                            <td>{{ material.upload_date.strftime('%Y/%m/%d') }}</td>
+                            <td>{{ material.author }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         {% else %}
-            <p class="no-records">No health records found for this student.</p>
+            <p>No study materials available at the moment.</p>
         {% endif %}
     </div>
-
 
     <footer>
         <p>&copy; 2024 School Management System</p>
