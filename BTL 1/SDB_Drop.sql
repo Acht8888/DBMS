@@ -1,0 +1,17 @@
+DROP TABLE Student;
+DROP TABLE HealthRecord;
+DROP TABLE Prerequisite;
+DROP TABLE Course;
+DROP TABLE HasParent;
+DROP TABLE Parent;
+DROP TABLE Teacher;
+DROP TABLE Class;
+DROP TABLE Classroom;
+DROP TABLE Schedules;
+DROP TABLE Attends;
+DROP TABLE Exam;
+DROP TABLE Material;
+DROP TABLE Takes;
+DROP TABLE Time;
+DROP TABLE Specialization;
+DROP TABLE ContactInfo;
