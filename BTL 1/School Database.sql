@@ -17,8 +17,6 @@ CREATE TABLE Student (
     status VARCHAR(20) CHECK (status IN ('active', 'inactive', 'graduated', 'suspended')),
     enrollment_year INT,
     CONSTRAINT chk_student_enrollment_year CHECK (enrollment_year >= EXTRACT(YEAR FROM dob) + 18),
-    CONSTRAINT fk_student_contact_info FOREIGN KEY (email, phone_number) 
-        REFERENCES ContactInfo(email, phone_number) 
 );
 
 CREATE TABLE Parent (
@@ -31,8 +29,6 @@ CREATE TABLE Parent (
     email VARCHAR2(100) UNIQUE NOT NULL,
     phone_number VARCHAR2(15) UNIQUE NOT NULL,
     address VARCHAR2(255),
-    CONSTRAINT fk_parent_contact_info FOREIGN KEY (email, phone_number) 
-        REFERENCES ContactInfo(email, phone_number) 
 );
 
 CREATE TABLE Teacher (
@@ -45,8 +41,6 @@ CREATE TABLE Teacher (
     phone_number VARCHAR2(15) UNIQUE NOT NULL,
     address VARCHAR2(255),
     years_of_exp INT CHECK (years_of_exp >= 0),
-    CONSTRAINT fk_teacher_contact_info FOREIGN KEY (email, phone_number) 
-        REFERENCES ContactInfo(email, phone_number) 
 );
 
 CREATE TABLE HealthRecord (

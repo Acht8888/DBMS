@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Students</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script>
+        function openPopup() {
+            document.getElementById('popupForm').classList.remove('hidden');
+        }
+        function closePopup() {
+            document.getElementById('popupForm').classList.add('hidden');
+        }
+
+        // Function to show flash messages
+        function showFlashMessages() {
+            const flashContainer = document.getElementById('flash-container');
+            if (flashContainer) {
+                flashContainer.classList.remove('hidden');
+                // After 3 seconds, fade out the message
+                setTimeout(() => {
+                    flashContainer.classList.add('opacity-0');
+                    // After fade-out transition, hide the container
+                    setTimeout(() => {
+                        flashContainer.classList.add('hidden');
+                        flashContainer.classList.remove('opacity-0');
+                    }, 500); // Match this duration with the CSS transition duration
+                }, 3000);
+            }
+        }
+
+        window.onload = showFlashMessages;
+    </script>
+    <style>
+        /* Optional: Add smooth transition for opacity */
+        #flash-container > div {
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Flash Message Popup -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div id="flash-container" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+          {% for category, message in messages %}
+            <div class="max-w-sm w-full bg-{{ 'green' if category == 'success' else 'red' }}-500 text-white px-6 py-4 rounded shadow-lg opacity-100">
+                <span class="block">{{ message }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Header Section -->
+    <header class="bg-green-500 text-white py-4 text-center">
+        <h1 class="text-3xl font-semibold">School Management System - Admin</h1>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-gray-800 p-4">
+        <a href="/adminHome" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Home</a>
+        <a href="/adminStudent" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Manage Students</a>
+        <a href="/logout" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Logout</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-6">
+        <h2 class="text-xl font-semibold mb-4">Student List</h2>
+        <button onclick="openPopup()" class="text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded mb-4 inline-block">
+            Add New Student
+        </button>
+
+        <!-- Table to display students -->
+        <table class="min-w-full table-auto bg-white shadow-md rounded">
+            <thead>
+                <tr>
+                    <th class="px-4 py-2 border-b">ID</th>
+                    <th class="px-4 py-2 border-b">Name</th>
+                    <th class="px-4 py-2 border-b">Email</th>
+                    <th class="px-4 py-2 border-b">Phone</th>
+                    <th class="px-4 py-2 border-b">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                    <tr class="hover:bg-gray-100">
+                        <td class="px-4 py-2 border-b text-center">{{ student.student_id }}</td>
+                        <td class="px-4 py-2 border-b">{{ student.fname }} {{ student.lname }}</td>
+                        <td class="px-4 py-2 border-b">{{ student.email }}</td>
+                        <td class="px-4 py-2 border-b">{{ student.phone_number }}</td>
+                        <td class="px-4 py-2 border-b text-center">
+                            <!-- Edit Link (Functionality to be implemented) -->
+                            <a href="#" class="text-yellow-500 hover:underline mr-2">Edit</a>
+                            <!-- Delete Form -->
+                            <form action="#" method="POST" class="inline">
+                                <button type="submit" class="text-red-500 hover:underline">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Popup Form -->
+    <div id="popupForm" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded shadow-lg max-w-lg w-full max-h-screen overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Add New Student</h3>
+            <form action="/adminStudent" method="POST">
+                <div class="mb-4">
+                    <label for="student_id" class="block font-medium">Student ID</label>
+                    <input type="number" id="student_id" name="student_id" class="w-full border px-3 py-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="username" class="block font-medium">Username</label>
+                    <input type="text" id="username" name="username" class="w-full border px-3 py-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="fname" class="block font-medium">First Name</label>
+                    <input type="text" id="fname" name="fname" class="w-full border px-3 py-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="lname" class="block font-medium">Last Name</label>
+                    <input type="text" id="lname" name="lname" class="w-full border px-3 py-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="gender" class="block font-medium">Gender</label>
+                    <select id="gender" name="gender" class="w-full border px-3 py-2 rounded" required>
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="dob" class="block font-medium">Date of Birth</label>
+                    <input type="date" id="dob" name="dob" class="w-full border px-3 py-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="email" class="block font-medium">Email</label>
+                    <input type="email" id="email" name="email" class="w-full border px-3 py-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="phone_number" class="block font-medium">Phone Number</label>
+                    <input type="text" id="phone_number" name="phone_number" class="w-full border px-3 py-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="address" class="block font-medium">Address</label>
+                    <input type="text" id="address" name="address" class="w-full border px-3 py-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="gpa" class="block font-medium">GPA</label>
+                    <input type="number" id="gpa" name="gpa" step="0.01" class="w-full border px-3 py-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="status" class="block font-medium">Status</label>
+                    <select id="status" name="status" class="w-full border px-3 py-2 rounded" required>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="graduated">Graduated</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="enrollment_year" class="block font-medium">Enrollment Year</label>
+                    <input type="number" id="enrollment_year" name="enrollment_year" class="w-full border px-3 py-2 rounded" required>
+                </div>
+                <div class="flex justify-between">
+                    <button type="button" onclick="closePopup()" class="bg-red-500 text-white px-4 py-2 rounded">Cancel</button>
+                    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Add Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="bg-gray-800 text-white text-center py-3 fixed bottom-0 w-full">
+        <p>&copy; 2024 School Management System</p>
+    </footer>
+
+</body>
+</html>
