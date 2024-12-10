@@ -1,11 +1,12 @@
 CREATE TABLE Users (
     username VARCHAR2(50) PRIMARY KEY,
-    password VARCHAR2(100) NOT NULL
+    password VARCHAR2(100) NOT NULL,
+    user_role VARCHAR2(20) CHECK (user_role IN ('admin', 'student', 'teacher')) 
 );
 
-INSERT INTO Users (username, password) VALUES ('duchuy', '123');
-INSERT INTO Users (username, password) VALUES ('phong', '123');
-INSERT INTO Users (username, password) VALUES ('duy', '123');
+INSERT INTO Users (username, password, user_role) VALUES ('duchuy', '123', 'student');
+INSERT INTO Users (username, password, user_role) VALUES ('phong', '123', 'teacher');
+INSERT INTO Users (username, password, user_role) VALUES ('duy', '123', 'admin');
 
 CREATE TABLE Student (
     username VARCHAR2(50),
@@ -26,5 +27,7 @@ CREATE TABLE Student (
 
 INSERT INTO Student (username, student_id, fname, lname, gender, dob, email, phone_number, address, gpa, status, enrollment_year)
 VALUES ('duchuy', 2212345, 'Tran', 'Duy Duc Huy', 'M', TO_DATE('2004-06-30', 'YYYY-MM-DD'), 'huy@gmail.com', '0123456789', '123 Duong A, Ho Chi Minh', 3.0, 'active', 2022);
+commit;
 
-
+drop table student;
+drop table users;

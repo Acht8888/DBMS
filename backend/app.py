@@ -15,7 +15,15 @@ class User(db.Model):
     __tablename__ = 'users'
     username = db.Column(db.String(50), primary_key=True)
     password = db.Column(db.String(100), nullable=False)
+    user_role = db.Column(db.String(20), nullable=False)
+    # Thêm CheckConstraint vào __table_args__
+    __table_args__ = (
+        db.CheckConstraint("user_role IN ('admin', 'student', 'teacher')", name="check_user_role"),
+    )
     student = db.relationship('Student', backref='user', uselist=False)
+
+    def __repr__(self):
+        return f"<User {self.username}, Role: {self.user_role}>"
 
 # Định nghĩa bảng Student (Model)
 class Student(db.Model):
@@ -33,7 +41,7 @@ class Student(db.Model):
     status = db.Column(db.String(20), nullable=False)
     enrollment_year = db.Column(db.Integer, nullable=False)
 
-def __repr__(self):
+    def __repr__(self):
         return f'<Student {self.username}>'    
 
 @app.route('/', methods=['GET', 'POST'])
@@ -48,7 +56,14 @@ def index():
         if user:
             # Nếu đăng nhập thành công, lưu username vào session
             session['username'] = username
-            return redirect('/home')
+            
+            # Kiểm tra role của user và chuyển hướng đến trang tương ứng
+            if user.user_role == 'student':
+                return redirect('/home')  # Trang dành cho học sinh
+            elif user.user_role == 'teacher':
+                return redirect('/teacherHome')  # Trang dành cho giáo viên
+            elif user.user_role == 'admin':
+                return redirect('/adminHome')  # Trang dành cho admin
 
         else:
             # Hiển thị thông báo lỗi khi đăng nhập không thành công
@@ -61,6 +76,22 @@ def index():
 def home():
     if 'username' in session:
         return render_template('home.html', username=session['username'])
+    else:
+        return redirect('/')
+
+# Route trang home cho teacher
+@app.route('/teacherHome')
+def teacherHome():
+    if 'username' in session:
+        return render_template('teacherHome.html', username=session['username'])
+    else:
+        return redirect('/')
+
+# Route trang home cho teacher
+@app.route('/adminHome')
+def adminHome():
+    if 'username' in session:
+        return render_template('adminHome.html', username=session['username'])
     else:
         return redirect('/')
 
@@ -93,6 +124,8 @@ def profile():
             return render_template('profile.html', error="Không tìm thấy thông tin sinh viên.")
     else:
         return redirect('/')
+
+
 
 # Route đăng xuất
 @app.route('/logout')
