@@ -137,6 +137,12 @@ def teacherHome():
     else:
         return redirect('/')
     
+@app.route('/adminHome')
+def adminHome():
+    if 'username' in session:
+        return render_template('adminHome.html', username=session['username'])
+    else:
+        return redirect('/')
 
 # Route đăng xuất
 @app.route('/logout')
