@@ -1,0 +1,121 @@
+<!-- app/templates/admin/student_detail.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Details - {{ student.fname }} {{ student.lname }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script>
+        // Function to show flash messages
+        function showFlashMessages() {
+            const flashContainer = document.getElementById('flash-container');
+            if (flashContainer) {
+                flashContainer.classList.remove('hidden');
+                // After 3 seconds, fade out the message
+                setTimeout(() => {
+                    flashContainer.classList.add('opacity-0');
+                    // After fade-out transition, hide the container
+                    setTimeout(() => {
+                        flashContainer.classList.add('hidden');
+                        flashContainer.classList.remove('opacity-0');
+                    }, 500); // Match this duration with the CSS transition duration
+                }, 3000);
+            }
+        }
+
+        window.onload = showFlashMessages;
+    </script>
+    <style>
+        /* Smooth transition for opacity */
+        #flash-container > div {
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Flash Message Popup -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div id="flash-container" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+          {% for category, message in messages %}
+            <div class="max-w-sm w-full bg-{{ 'green' if category == 'success' else 'red' }}-500 text-white px-6 py-4 rounded shadow-lg opacity-100" role="alert" aria-live="assertive" aria-atomic="true">
+                <span class="block">{{ message }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Header Section -->
+    <header class="bg-green-500 text-white py-4 text-center">
+        <h1 class="text-3xl font-semibold">Student Details</h1>
+        <p class="text-lg">Welcome, {{ session['username'] }}</p>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="bg-gray-800">
+        <div class="flex justify-around p-4">
+            <a href="/adminHome" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Home</a>
+            <a href="#" class="text-white bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded">Student</a>
+            <!-- Add other navigation links as needed -->
+            <a href="/logout" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-6">
+        <div class="bg-white shadow-md rounded p-6">
+            <h2 class="text-2xl font-semibold mb-4">Student Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <strong>Student ID:</strong> {{ student.student_id }}
+                </div>
+                <div>
+                    <strong>Username:</strong> {{ student.username }}
+                </div>
+                <div>
+                    <strong>First Name:</strong> {{ student.fname }}
+                </div>
+                <div>
+                    <strong>Last Name:</strong> {{ student.lname }}
+                </div>
+                <div>
+                    <strong>Gender:</strong> {{ 'Male' if student.gender == 'M' else 'Female' }}
+                </div>
+                <div>
+                    <strong>Date of Birth:</strong> {{ student.dob.strftime('%Y-%m-%d') if student.dob else 'N/A' }}
+                </div>
+                <div>
+                    <strong>Email:</strong> {{ student.email }}
+                </div>
+                <div>
+                    <strong>Phone Number:</strong> {{ student.phone_number }}
+                </div>
+                <div>
+                    <strong>Address:</strong> {{ student.address }}
+                </div>
+                <div>
+                    <strong>GPA:</strong> {{ student.gpa }}
+                </div>
+                <div>
+                    <strong>Status:</strong> {{ student.status.capitalize() }}
+                </div>
+                <div>
+                    <strong>Enrollment Year:</strong> {{ student.enrollment_year }}
+                </div>
+            </div>
+            <div class="mt-6 flex justify-between">
+                <a href="/adminStudent" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Back to Student List</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="bg-gray-800 text-white text-center py-3 fixed bottom-0 w-full">
+        <p>&copy; 2024 School Management System</p>
+    </footer>
+
+</body>
+</html>

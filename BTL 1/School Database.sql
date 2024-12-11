@@ -16,7 +16,7 @@ CREATE TABLE Student (
     gpa DECIMAL(3, 2) CHECK (gpa BETWEEN 0 AND 4.0),
     status VARCHAR(20) CHECK (status IN ('active', 'inactive', 'graduated', 'suspended')),
     enrollment_year INT,
-    CONSTRAINT chk_student_enrollment_year CHECK (enrollment_year >= EXTRACT(YEAR FROM dob) + 18),
+    CONSTRAINT chk_student_enrollment_year CHECK (enrollment_year >= EXTRACT(YEAR FROM dob) + 18)
 );
 
 CREATE TABLE Parent (
@@ -28,7 +28,7 @@ CREATE TABLE Parent (
     relationship VARCHAR2(100) CHECK(relationship IN ('Father','Mother','Guardian')),
     email VARCHAR2(100) UNIQUE NOT NULL,
     phone_number VARCHAR2(15) UNIQUE NOT NULL,
-    address VARCHAR2(255),
+    address VARCHAR2(255)
 );
 
 CREATE TABLE Teacher (
@@ -40,7 +40,7 @@ CREATE TABLE Teacher (
     email VARCHAR2(100) UNIQUE NOT NULL,
     phone_number VARCHAR2(15) UNIQUE NOT NULL,
     address VARCHAR2(255),
-    years_of_exp INT CHECK (years_of_exp >= 0),
+    years_of_exp INT CHECK (years_of_exp >= 0)
 );
 
 CREATE TABLE HealthRecord (

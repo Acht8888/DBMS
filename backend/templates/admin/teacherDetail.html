@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Details - {{ teacher.fname }} {{ teacher.lname }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script>
+        // Function to show flash messages
+        function showFlashMessages() {
+            const flashContainer = document.getElementById('flash-container');
+            if (flashContainer) {
+                flashContainer.classList.remove('hidden');
+                // After 3 seconds, fade out the message
+                setTimeout(() => {
+                    flashContainer.classList.add('opacity-0');
+                    // After fade-out transition, hide the container
+                    setTimeout(() => {
+                        flashContainer.classList.add('hidden');
+                        flashContainer.classList.remove('opacity-0');
+                    }, 500); // Match this duration with the CSS transition duration
+                }, 3000);
+            }
+        }
+
+        window.onload = showFlashMessages;
+    </script>
+    <style>
+        /* Smooth transition for opacity */
+        #flash-container > div {
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Flash Message Popup -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div id="flash-container" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+          {% for category, message in messages %}
+            <div class="max-w-sm w-full bg-{{ 'green' if category == 'success' else 'red' }}-500 text-white px-6 py-4 rounded shadow-lg opacity-100" role="alert" aria-live="assertive" aria-atomic="true">
+                <span class="block">{{ message }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Header Section -->
+    <header class="bg-green-500 text-white py-4 text-center">
+        <h1 class="text-3xl font-semibold">Teacher Details</h1>
+        <p class="text-lg">Welcome, {{ session['username'] }}</p>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="bg-gray-800">
+        <div class="flex justify-around p-4">
+            <a href="/adminHome" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Home</a>
+            <a href="#" class="text-white bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded">Teachers</a>
+            <!-- Add other navigation links as needed -->
+            <a href="/logout" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-6">
+        <div class="bg-white shadow-md rounded p-6">
+            <h2 class="text-2xl font-semibold mb-4">Teacher Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <strong>Teacher ID:</strong> {{ teacher.teacher_id }}
+                </div>
+                <div>
+                    <strong>Username:</strong> {{ teacher.username }}
+                </div>
+                <div>
+                    <strong>First Name:</strong> {{ teacher.fname }}
+                </div>
+                <div>
+                    <strong>Last Name:</strong> {{ teacher.lname }}
+                </div>
+                <div>
+                    <strong>Gender:</strong> {{ 'Male' if teacher.gender == 'M' else 'Female' }}
+                </div>
+                <div>
+                    <strong>Date of Birth:</strong> {{ teacher.dob.strftime('%Y-%m-%d') if teacher.dob else 'N/A' }}
+                </div>
+                <div>
+                    <strong>Email:</strong> {{ teacher.email }}
+                </div>
+                <div>
+                    <strong>Phone Number:</strong> {{ teacher.phone_number }}
+                </div>
+                <div>
+                    <strong>Address:</strong> {{ teacher.address }}
+                </div>
+                <div>
+                    <strong>Years of Experience:</strong> {{ teacher.years_of_exp }}
+                </div>
+            </div>
+            <div class="mt-6 flex justify-between">
+                <a href="/adminTeacher" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Back to Teacher List</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="bg-gray-800 text-white text-center py-3 fixed bottom-0 w-full">
+        <p>&copy; 2024 School Management System</p>
+    </footer>
+
+</body>
+</html>
