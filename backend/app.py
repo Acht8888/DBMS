@@ -135,7 +135,7 @@ def index():
 @app.route('/logout')
 def logout():
     session.pop('username', None)
-    flash('You have been logged out successfully.', 'success')
+    # flash('You have been logged out successfully.', 'success')
     return redirect(url_for('index'))
 
 
