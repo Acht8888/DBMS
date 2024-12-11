@@ -1,18 +1,10 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
     margin: 0;
     padding: 0;
 }
 
-header {
-    background-color: #4CAF50;
-    color: white;
-    text-align: center;
-    padding: 20px;
-}
-
-.material-container {
+main {
     width: 80%;
     margin: 5% auto;
     background-color: white;
@@ -25,24 +17,30 @@ header {
     flex-direction: column;
 }
 
-.material-table {
+table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
 
-.material-table th, .material-table td {
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
 
-.material-table th {
+th {
     background-color: #4CAF50;
     color: #333;
     font-weight: bold;
 }
 
-.material-table td {
-    color: #555;
-}
+
+
+
+
+

@@ -200,8 +200,141 @@ INSERT INTO Material (material_id, course_id, type, title, upload_date, author)
 VALUES (4, 4, 'Presentation', 'History Through the Ages', TO_DATE('2023-04-05', 'YYYY-MM-DD'), 'Prof. Alan Brown');commit;
 INSERT INTO Material (material_id, course_id, type, title, upload_date, author)
 VALUES (5, 5, 'Other', 'Classic Literature: A Study Guide', TO_DATE('2023-05-18', 'YYYY-MM-DD'), 'Sara Johnson');commit;
--- Insert Exam --
 
+CREATE TABLE Classroom (
+    building VARCHAR2(50),
+    room VARCHAR2(50),
+    capacity INT CHECK (capacity > 0),
+    PRIMARY KEY (building, room)
+);commit;
 
+INSERT INTO Classroom (building, room, capacity)
+VALUES ('Building A', '1', 30);commit;
+INSERT INTO Classroom (building, room, capacity)
+VALUES ('Building B', '2', 25);commit;
+INSERT INTO Classroom (building, room, capacity)
+VALUES ('Building C', '3', 40);commit;
+INSERT INTO Classroom (building, room, capacity)
+VALUES ('Building D', '4', 15);commit;
+
+CREATE TABLE Schedules (
+    class_id INT NOT NULL,
+    course_id INT NOT NULL,
+    room VARCHAR2(50) NOT NULL,
+    building VARCHAR2(50) NOT NULL,
+    PRIMARY KEY (class_id, course_id, room, building),
+    CONSTRAINT fk_schedules_class FOREIGN KEY (class_id, course_id) 
+        REFERENCES Class(class_id, course_id) 
+        ON DELETE CASCADE,
+    CONSTRAINT fk_schedules_classroom FOREIGN KEY (room, building) 
+        REFERENCES Classroom(room, building)
+        ON DELETE CASCADE
+);commit;
+
+INSERT INTO Schedules (class_id, course_id, room, building)
+VALUES (1, 1, '1', 'Building A');commit;
+INSERT INTO Schedules (class_id, course_id, room, building)
+VALUES (2, 1, '2', 'Building B');commit;
+INSERT INTO Schedules (class_id, course_id, room, building)
+VALUES (1, 2, '2', 'Building B');commit;
+INSERT INTO Schedules (class_id, course_id, room, building)
+VALUES (2, 2, '3', 'Building C');commit;
+INSERT INTO Schedules (class_id, course_id, room, building)
+VALUES (1, 3, '3', 'Building C');commit;
+INSERT INTO Schedules (class_id, course_id, room, building)
+VALUES (2, 3, '4', 'Building D');commit;
+INSERT INTO Schedules (class_id, course_id, room, building)
+VALUES (1, 4, '4', 'Building D');commit;
+INSERT INTO Schedules (class_id, course_id, room, building)
+VALUES (2, 4, '1', 'Building A');commit;
+INSERT INTO Schedules (class_id, course_id, room, building)
+VALUES (1, 5, '1', 'Building A');commit;
+INSERT INTO Schedules (class_id, course_id, room, building)
+VALUES (2, 5, '2', 'Building B');commit;
+
+CREATE TABLE Time (
+    class_id INT NOT NULL,
+    course_id INT NOT NULL,
+    room VARCHAR2(50) NOT NULL,
+    building VARCHAR2(50) NOT NULL,
+    day_of_week CHAR(9) CHECK (day_of_week IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')),
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+    PRIMARY KEY (class_id, course_id, room, building, day_of_week, start_time, end_time),  
+    CONSTRAINT fk_time_schedules FOREIGN KEY (course_id, class_id, room, building) 
+        REFERENCES Schedules(course_id, class_id, room, building) 
+        ON DELETE CASCADE,
+    CONSTRAINT chk_time_order CHECK (end_time > start_time),
+    CONSTRAINT uq_time UNIQUE (room, building, day_of_week, start_time, end_time)
+);commit;
+
+INSERT INTO Time (class_id, course_id, room, building, day_of_week, start_time, end_time)
+VALUES (1, 1, '1', 'Building A', 'Monday', TO_TIMESTAMP('2024-10-24 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2024-10-24 16:00:00', 'YYYY-MM-DD HH24:MI:SS'));commit;
+INSERT INTO Time (class_id, course_id, room, building, day_of_week, start_time, end_time)
+VALUES (2, 1, '2', 'Building B', 'Tuesday', TO_TIMESTAMP('2024-10-24 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2024-10-24 16:00:00', 'YYYY-MM-DD HH24:MI:SS'));commit;
+INSERT INTO Time (class_id, course_id, room, building, day_of_week, start_time, end_time)
+VALUES (1, 2, '2', 'Building B', 'Wednesday', TO_TIMESTAMP('2024-10-24 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2024-10-24 16:00:00', 'YYYY-MM-DD HH24:MI:SS'));commit;
+INSERT INTO Time (class_id, course_id, room, building, day_of_week, start_time, end_time)
+VALUES (2, 2, '3', 'Building C', 'Thursday', TO_TIMESTAMP('2024-10-24 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2024-10-24 16:00:00', 'YYYY-MM-DD HH24:MI:SS'));commit;
+INSERT INTO Time (class_id, course_id, room, building, day_of_week, start_time, end_time)
+VALUES (1, 3, '3', 'Building C', 'Friday', TO_TIMESTAMP('2024-10-24 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2024-10-24 16:00:00', 'YYYY-MM-DD HH24:MI:SS'));commit;
+INSERT INTO Time (class_id, course_id, room, building, day_of_week, start_time, end_time)
+VALUES (2, 3, '4', 'Building D', 'Saturday', TO_TIMESTAMP('2024-10-24 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2024-10-24 16:00:00', 'YYYY-MM-DD HH24:MI:SS'));commit;
+INSERT INTO Time (class_id, course_id, room, building, day_of_week, start_time, end_time)
+VALUES (1, 4, '4', 'Building D', 'Monday', TO_TIMESTAMP('2024-10-24 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2024-10-24 16:00:00', 'YYYY-MM-DD HH24:MI:SS'));commit;
+INSERT INTO Time (class_id, course_id, room, building, day_of_week, start_time, end_time)
+VALUES (2, 4, '1', 'Building A', 'Tuesday', TO_TIMESTAMP('2024-10-24 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2024-10-24 16:00:00', 'YYYY-MM-DD HH24:MI:SS'));commit;
+INSERT INTO Time (class_id, course_id, room, building, day_of_week, start_time, end_time)
+VALUES (1, 5, '1', 'Building A', 'Wednesday', TO_TIMESTAMP('2024-10-24 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2024-10-24 16:00:00', 'YYYY-MM-DD HH24:MI:SS'));commit;
+INSERT INTO Time (class_id, course_id, room, building, day_of_week, start_time, end_time)
+VALUES (2, 5, '2', 'Building B', 'Thursday', TO_TIMESTAMP('2024-10-24 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2024-10-24 16:00:00', 'YYYY-MM-DD HH24:MI:SS'));commit;
+
+CREATE TABLE Exam (
+    exam_id INT PRIMARY KEY,
+    exam_date DATE,
+    exam_type VARCHAR2(20) CHECK (exam_type IN ('midterm','final','quiz')),
+    grading_date DATE,
+    teacher_id INT NOT NULL,
+    course_id INT NOT NULL,
+    CONSTRAINT fk_exam_teacher_id FOREIGN KEY (teacher_id) 
+        REFERENCES Teacher(teacher_id) 
+        ON DELETE CASCADE,
+    CONSTRAINT fk_exam_course_id FOREIGN KEY (course_id) 
+        REFERENCES Course(course_id) 
+        ON DELETE CASCADE,
+    CONSTRAINT chk_exam_date CHECK (grading_date > exam_date)
+);commit;
+
+INSERT INTO Exam (exam_id, exam_date, exam_type, grading_date, teacher_id, course_id)
+VALUES (1, TO_DATE('2024-03-10', 'YYYY-MM-DD'), 'midterm', TO_DATE('2024-03-15', 'YYYY-MM-DD'), 1, 1);commit;
+INSERT INTO Exam (exam_id, exam_date, exam_type, grading_date, teacher_id, course_id)
+VALUES (2, TO_DATE('2024-05-20', 'YYYY-MM-DD'), 'final', TO_DATE('2024-05-25', 'YYYY-MM-DD'), 2, 2);commit;
+INSERT INTO Exam (exam_id, exam_date, exam_type, grading_date, teacher_id, course_id)
+VALUES (3, TO_DATE('2024-01-15', 'YYYY-MM-DD'), 'quiz', TO_DATE('2024-01-20', 'YYYY-MM-DD'), 3, 3);commit;
+INSERT INTO Exam (exam_id, exam_date, exam_type, grading_date, teacher_id, course_id)
+VALUES (4, TO_DATE('2024-02-18', 'YYYY-MM-DD'), 'midterm', TO_DATE('2024-02-25', 'YYYY-MM-DD'), 4, 4);commit;
+INSERT INTO Exam (exam_id, exam_date, exam_type, grading_date, teacher_id, course_id)
+VALUES (5, TO_DATE('2024-04-10', 'YYYY-MM-DD'), 'final', TO_DATE('2024-04-15', 'YYYY-MM-DD'), 5, 5);commit;
+
+CREATE TABLE Takes (
+    status VARCHAR2(20) CHECK (status IN ('Pending', 'Completed', 'Absent', 'Graded')),
+    grade VARCHAR2(10) CHECK (grade IN ('A', 'B', 'C', 'D', 'E', 'F')),
+    score INT CHECK (score BETWEEN 0 AND 100),
+    student_id INT NOT NULL,
+    exam_id INT NOT NULL,
+    PRIMARY KEY (student_id, exam_id),
+    CONSTRAINT fk_takes_student_id FOREIGN KEY (student_id) 
+        REFERENCES Student(student_id) 
+        ON DELETE CASCADE,
+    CONSTRAINT fk_takes_exam_id FOREIGN KEY (exam_id) 
+        REFERENCES Exam(exam_id) 
+        ON DELETE CASCADE
+);commit;
+
+INSERT INTO Takes (status, grade, score, student_id, exam_id) VALUES ('Completed', 'A', 95, 2212345, 1);commit;
+INSERT INTO Takes (status, grade, score, student_id, exam_id) VALUES ('Completed', 'B', 85, 2212345, 2);commit;
+INSERT INTO Takes (status, grade, score, student_id, exam_id) VALUES ('Completed', 'C', 75, 2212345, 3);commit;
+INSERT INTO Takes (status, grade, score, student_id, exam_id) VALUES ('Graded', 'B', 85, 2212345, 4);commit;
+INSERT INTO Takes (status, grade, score, student_id, exam_id) VALUES ('Graded', 'B', 80, 2212345, 5);commit;
 
 

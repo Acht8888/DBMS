@@ -176,7 +176,6 @@ def courses():
             {'student_id': student['student_id']}
         ).mappings().fetchall()
         
-        print("Courses: ", courses)
 
         # Truyền dữ liệu sang template
         return render_template('course.html', student=student, courses=courses)
@@ -199,34 +198,136 @@ def studymaterials():
         if not student:
             return render_template('studymaterial.html', error="Không tìm thấy thông tin sinh viên.")
 
-        # Lấy danh sách các khóa học mà sinh viên đã tham gia
+        # Lấy danh sách các tài liệu học của sinh viên đó
         materials_query = db.session.execute(
-        text("""
-            SELECT 
-                m.material_id,
-                m.type,
-                m.title,
-                m.upload_date,
-                m.author,
-                c.course_name,
-                s.fname AS student_fname,
-                s.lname AS student_lname
-            FROM 
-                Material m
-            JOIN 
-                Course c ON m.course_id = c.course_id
-            JOIN 
-                Attends a ON a.course_id = c.course_id
-            JOIN 
-                Student s ON a.student_id = s.student_id
-            ORDER BY 
-                c.course_name, m.upload_date DESC
-        """)
-    )
+            text("""
+                SELECT 
+                    m.material_id,
+                    m.type,
+                    m.title,
+                    m.upload_date,
+                    m.author,
+                    c.course_name,
+                    s.fname AS student_fname,
+                    s.lname AS student_lname
+                FROM 
+                    Material m
+                JOIN 
+                    Course c ON m.course_id = c.course_id
+                JOIN 
+                    Attends a ON a.course_id = c.course_id
+                JOIN 
+                    Student s ON a.student_id = s.student_id
+                WHERE 
+                    s.username = :username  -- Lọc theo username của sinh viên hiện tại
+                ORDER BY 
+                    c.course_name, m.upload_date DESC
+            """),
+            {'username': username}
+        )
         materials = materials_query.fetchall()
 
         # Truyền dữ liệu sang template
         return render_template('studymaterial.html', student=student, materials=materials)
+
+    else:
+        return redirect('/')
+
+@app.route('/timetable')
+def timetable():
+    if 'username' in session:
+        # Lấy username từ session
+        username = session['username']
+
+        # Lấy thông tin sinh viên từ username trong session
+        student = db.session.execute(
+            text("SELECT student_id, fname, lname FROM Student WHERE username = :username"),
+            {'username': username}
+        ).mappings().fetchone()
+
+        if not student:
+            return render_template('timetable.html', error="Không tìm thấy thông tin sinh viên.")
+
+        # Lấy thông tin lịch trình của sinh viên hiện tại
+        timetable_query = """
+        SELECT 
+            C.course_name AS course_name,
+            C.course_id AS course_id,
+            T.day_of_week AS day_of_week,
+            TO_CHAR(T.start_time, 'HH24:MI') AS start_time,
+            TO_CHAR(T.end_time, 'HH24:MI') AS end_time,
+            SCH.room AS room,
+            SCH.building AS building
+        FROM 
+            Student S
+            JOIN Attends A ON S.student_id = A.student_id
+            JOIN Class CL ON A.course_id = CL.course_id AND A.class_id = CL.class_id
+            JOIN Course C ON CL.course_id = C.course_id
+            JOIN Schedules SCH ON CL.class_id = SCH.class_id AND CL.course_id = SCH.course_id
+            JOIN Time T ON SCH.class_id = T.class_id AND SCH.course_id = T.course_id
+            WHERE 
+                S.username = :username  -- Lọc theo username của sinh viên hiện tại
+        ORDER BY 
+            S.student_id,
+            T.day_of_week,
+            T.start_time
+        """
+
+        timetable_data = db.session.execute(
+            text(timetable_query),
+            {'username': username}
+        ).mappings().fetchall()
+
+        # Truyền dữ liệu sang template
+        return render_template('timetable.html', student=student, timetable=timetable_data)
+
+    else:
+        return redirect('/')
+
+@app.route('/grades')
+def grades():
+    if 'username' in session:
+        # Lấy username từ session
+        username = session['username']
+        
+        # Lấy thông tin sinh viên từ username trong session
+        student = db.session.execute(
+            text("SELECT student_id, fname, lname FROM student WHERE username = :username"),
+            {'username': username}
+        ).mappings().fetchone()
+
+        # Lấy tất cả thông tin về môn học, điểm số, kỳ thi, và sinh viên của sinh viên hiện tại
+        grades_query = db.session.execute(
+            text("""
+                SELECT 
+                    c.course_id,
+                    c.course_name,
+                    t.grade,
+                    t.score,
+                    e.exam_id,
+                    e.exam_type,
+                    TO_CHAR(e.exam_date, 'YYYY-MM-DD') AS exam_date,
+                    s.student_id,
+                    s.fname || ' ' || s.lname AS student_name
+                FROM 
+                    Takes t
+                JOIN 
+                    Exam e ON t.exam_id = e.exam_id
+                JOIN 
+                    Course c ON e.course_id = c.course_id
+                JOIN 
+                    Student s ON t.student_id = s.student_id
+                WHERE 
+                    s.username = :username  -- Lọc theo username của sinh viên hiện tại
+                ORDER BY 
+                    e.exam_date DESC
+            """),
+            {'username': username}
+        )
+        grades = grades_query.fetchall()
+
+        # Truyền dữ liệu sang template
+        return render_template('grades.html', grades=grades, student=student)
 
     else:
         return redirect('/')

@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Courses Information</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/studymaterial.css') }}">
+    <title>Timetable</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/timetable.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 </head>
 <body>
-
     <header>
-        <h1>Study Materials</h1>
+        <h1>Timetable</h1>
         {% if student %}
             <p>Welcome, {{ student.fname }} {{ student.lname }}</p>
         {% else %}
@@ -31,40 +30,39 @@
         <a href="/logout">Logout</a>
     </nav>
 
-    <!-- Study Materials -->
-    <div class="material-container">
-        {% if materials %}
-            
-            <table class="material-table">
+    <main>
+        {% if timetable %}   
+            <table>
                 <thead>
                     <tr>
                         <th>Course Name</th>
-                        <th>Material Type</th>
-                        <th>Title</th>
-                        <th>Upload Date</th>
-                        <th>Author</th>
+                        <th>Day</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Room</th>
+                        <th>Building</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for material in materials %}
+                    {% for entry in timetable %}
                         <tr>
-                            <td>{{ material.course_name }}</td>
-                            <td>{{ material.type }}</td>
-                            <td>{{ material.title }}</td>
-                            <td>{{ material.upload_date.strftime('%Y/%m/%d') }}</td>
-                            <td>{{ material.author }}</td>
+                            <td>{{ entry.course_name }}</td>
+                            <td>{{ entry.day_of_week }}</td>
+                            <td>{{ entry.start_time }}</td>
+                            <td>{{ entry.end_time }}</td>
+                            <td>{{ entry.room }}</td>
+                            <td>{{ entry.building }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         {% else %}
-            <p>No study materials available at the moment.</p>
+            <p>No timetable information available.</p>
         {% endif %}
-    </div>
+    </main>
 
     <footer>
         <p>&copy; 2024 School Management System</p>
     </footer>
-
 </body>
 </html>
