@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Materials - School Management System</title>
+    <title>Students - School Management System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher_material.css') }}">
 </head>
 <body>
-
+    
     <!-- Header Section -->
     <header>
-        <h1>Study Materials</h1>
-        <p>Welcome! Teacher</p>
+        <h1>Study Material</h1>
+        <p> Welcome! Teacher </p>
     </header>
-
+     
     <!-- Navigation Bar -->
-    <nav>
+     <nav>
         <a href="/teacherHome">Home</a>
         <a href="/teacher_profile">Personal Information</a>
         <a href="/teacher_course">Courses</a>
@@ -25,44 +25,86 @@
         <a href="/logout">Logout</a>
     </nav>
 
-    <!-- Materials Table -->
-    <div class="materials-container">
-        {% if materials %}
-        <div class="table-responsive">
-            <table class="materials-table">
-                <thead>
-                    <tr>
-                        <th>Material ID</th>
-                        <th>Course ID</th>
-                        <th>Type</th>
-                        <th>Title</th>
-                        <th>Upload Date</th>
-                        <th>Author</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for material in materials %}
-                    <tr>
-                        <td>{{ material.material_id }}</td>
-                        <td>{{ material.course_id }}</td>
-                        <td>{{ material.type }}</td>
-                        <td>{{ material.title }}</td>
-                        <td>{{ material.upload_date.strftime('%Y/%m/%d') if material.upload_date else 'No data available' }}</td>
-                        <td>{{ material.author }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p>No materials found.</p>
-        {% endif %}
-    </div>
+    <h2>Add New Material</h2>
+    <form method="POST" action="/teacher_material">
+        <input type="hidden" name="action" value="add">
+        <label for="material_id">Material ID:</label>
+        <input type="text" id="material_id" name="material_id" required><br>
 
-    <!-- Footer Section -->
-    <footer>
-        <p>&copy; 2024 School Management System</p>
-    </footer>
+        <label for="course_id">Course ID:</label>
+        <input type="text" id="course_id" name="course_id" required><br>
 
+        <label for="type">Type:</label>
+        <input type="text" id="type" name="type" required><br>
+
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required><br>
+
+        <label for="author">Author:</label>
+        <input type="text" id="author" name="author" required><br>
+
+        <label for="upload_date">Upload Date:</label>
+        <input type="date" id="upload_date" name="upload_date" required><br>
+
+        <button type="submit">Add Material</button>
+    </form>
+
+    <h2>Update Material</h2>
+    <form method="POST" action="/teacher_material">
+        <input type="hidden" name="action" value="update">
+        <label for="material_id">Material ID:</label>
+        <input type="text" id="material_id" name="material_id" required><br>
+
+        <label for="course_id">Course ID:</label>
+        <input type="text" id="course_id" name="course_id" required><br>
+
+        <label for="type">Type:</label>
+        <input type="text" id="type" name="type" required><br>
+
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required><br>
+
+        <label for="author">Author:</label>
+        <input type="text" id="author" name="author" required><br>
+
+        <label for="upload_date">Upload Date:</label>
+        <input type="date" id="upload_date" name="upload_date" required><br>
+
+        <button type="submit">Update Material</button>
+    </form>
+
+    <h2>Existing Materials</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Material ID</th>
+                <th>Course ID</th>
+                <th>Type</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Upload Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materials %}
+            <tr>
+                <td>{{ material.material_id }}</td>
+                <td>{{ material.course_id }}</td>
+                <td>{{ material.type }}</td>
+                <td>{{ material.title }}</td>
+                <td>{{ material.author }}</td>
+                <td>{{ material.upload_date.strftime('%d/%m/%Y') }}</td>
+                <td>
+                    <form method="POST" action="/teacher_material" style="display:inline;">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="material_id" value="{{ material.material_id }}">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>

@@ -1,36 +1,24 @@
-/* General Styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
+}
+
+h1, h2 {
     color: #333;
 }
 
-/* Header Styles */
 header {
-    background-color: #333;
+    background-color: #4CAF50;
     color: white;
-    padding: 20px 0;
+    padding: 10px 0;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-header h1 {
-    margin: 0;
-    font-size: 2em;
-}
-
-header p {
-    margin: 5px 0 0;
-    font-size: 1.2em;
-}
-
-/* Navigation Bar Styles */
 nav {
-    background-color: #444;
+    background-color: #333;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 nav a {
@@ -38,9 +26,8 @@ nav a {
     display: block;
     color: white;
     text-align: center;
-    padding: 14px 20px;
+    padding: 14px 16px;
     text-decoration: none;
-    transition: background-color 0.3s, color 0.3s;
 }
 
 nav a:hover {
@@ -48,54 +35,84 @@ nav a:hover {
     color: black;
 }
 
-/* Materials Container Styles */
-.materials-container {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 20px auto;
+form {
     background-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Responsive Table Styles */
-.table-responsive {
-    overflow-x: auto;
+form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
 }
 
-.materials-table {
+form input[type="text"],
+form input[type="date"],
+form select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+form button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #45a049;
+}
+
+table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
 }
 
-.materials-table th, .materials-table td {
+table, th, td {
     border: 1px solid #ddd;
-    padding: 12px;
+}
+
+th, td {
+    padding: 8px;
     text-align: left;
 }
 
-.materials-table th {
+th {
     background-color: #f2f2f2;
-    font-weight: bold;
 }
 
-.materials-table tr:nth-child(even) {
+tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
-.materials-table tr:hover {
+ tr:hover {
     background-color: #f1f1f1;
+} 
+
+form[style="display:inline;"] {
+    display: inline;
+    background-color: transparent;
+    border: none;
+    padding: 0;
 }
 
-/* Footer Styles */
-footer {
-    background-color: #333;
-    color: white;
-    text-align: center;
-    padding: 10px 0;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
-    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+form[style="display:inline;"] button {
+    background-color: #f44336;
+    padding: 3;
 }
+
+form[style="display:inline;"] button:hover {
+    background-color: #e53935;
+}
+
+ 

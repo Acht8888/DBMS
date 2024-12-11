@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text  # Import text để sử dụng với SQL thuần túy
-
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from datetime import datetime
 import logging
 
 app = Flask(__name__)
@@ -9,7 +10,7 @@ app.debug = True
 app.secret_key = 'your_secret_key'  # Cần thiết để sử dụng session
 
 # Cấu hình cơ sở dữ liệu Oracle
-app.config['SQLALCHEMY_DATABASE_URI'] = 'oracle+cx_oracle://C##Phong1:1234@localhost:1521/XE'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'oracle+cx_oracle://C##Phong1:1234@127.0.0.1:1521/XE'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -366,20 +367,128 @@ def teacher_student():
         return render_template('teacher_student.html', students=students)
     else:
         return redirect('/')
-    
-@app.route('/teacher_material')
+
+
+@app.route('/teacher_material', methods=['GET', 'POST'])
 def teacher_material():
     if 'username' in session:
         username = session['username']
-        materials = db.session.execute(
-            text("SELECT * FROM Material")
-        ).mappings().fetchall()
-        return render_template('teacher_material.html', username=username, materials=materials)
-    else:
-        return redirect('/')
 
+    if request.method == 'POST':
+        action = request.form.get('action')
+        logging.debug(f"Action: {action}")
 
+        if action == 'add':
+            # Retrieve and validate form data
+            material_id = request.form.get('material_id')
+            course_id = request.form.get('course_id')
+            material_type = request.form.get('type')
+            title = request.form.get('title')
+            upload_date_str = request.form.get('upload_date')
+            author = request.form.get('author')
+            upload_date = datetime.strptime(upload_date_str, '%Y-%m-%d').date()
 
+            # Add to Database
+            try:
+                db.session.execute(
+                    text("""
+                        INSERT INTO Material (material_id, course_id, type, title, upload_date, author)
+                        VALUES (:material_id, :course_id, :type, :title, :upload_date, :author)
+                    """),
+                    {'material_id': material_id, 'course_id': course_id, 'type': material_type, 'title': title, 'upload_date': upload_date, 'author': author}
+                )
+                db.session.commit()
+                flash('Material added successfully!', 'success')
+            except IntegrityError as ie:
+                db.session.rollback()
+                if 'unique constraint' in str(ie.orig).lower():
+                    flash('Material ID already exists.', 'error')
+                else:
+                    flash('Database Integrity Error: ' + str(ie.orig), 'error')
+                app.logger.error(f"IntegrityError while adding material: {ie}")
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                flash('An error occurred while adding the material.', 'error')
+                app.logger.error(f"SQLAlchemyError while adding material: {e}")
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Unexpected error: {e}', 'error')
+                app.logger.error(f"Unexpected error while adding material: {e}")
+
+            return redirect(url_for('teacher_material'))
+
+        elif action == 'update':
+            # Retrieve and validate form data
+            material_id = request.form.get('material_id')
+            course_id = request.form.get('course_id')
+            material_type = request.form.get('type')
+            title = request.form.get('title')
+            upload_date_str = request.form.get('upload_date')
+            author = request.form.get('author')
+
+            upload_date = datetime.strptime(upload_date_str, '%Y-%m-%d').date()
+
+            # Update Database
+            try:
+                db.session.execute(
+                    text("""
+                        UPDATE Material
+                        SET course_id = :course_id, type = :type, title = :title, author = :author, upload_date = :upload_date
+                        WHERE material_id = :material_id
+                    """),
+                    {'course_id': course_id, 'type': material_type, 'title': title, 'author': author, 'upload_date': upload_date, 'material_id': material_id}
+                )
+                db.session.commit()
+                flash('Material updated successfully!', 'success')
+            except IntegrityError as ie:
+                db.session.rollback()
+                flash('Database Integrity Error: ' + str(ie.orig), 'error')
+                app.logger.error(f"IntegrityError while updating material: {ie}")
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                flash('An error occurred while updating the material.', 'error')
+                app.logger.error(f"SQLAlchemyError while updating material: {e}")
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Unexpected error: {e}', 'error')
+                app.logger.error(f"Unexpected error while updating material: {e}")
+
+            return redirect(url_for('teacher_material'))
+        
+        elif action == 'delete':
+            # Retrieve and validate form data
+            material_id = request.form.get('material_id')
+
+            # Delete from Database
+            try:
+                db.session.execute(
+                    text("DELETE FROM Material WHERE material_id = :material_id"),
+                    {'material_id': material_id}
+                )
+                db.session.commit()
+                flash('Material deleted successfully!', 'success')
+            except IntegrityError as ie:
+                db.session.rollback()
+                flash('Database Integrity Error: ' + str(ie.orig), 'error')
+                app.logger.error(f"IntegrityError while deleting material: {ie}")
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                flash('An error occurred while deleting the material.', 'error')
+                app.logger.error(f"SQLAlchemyError while deleting material: {e}")
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Unexpected error: {e}', 'error')
+                app.logger.error(f"Unexpected error while deleting material: {e}")
+
+            return redirect(url_for('teacher_material'))
+
+    materials = db.session.execute(
+        text("SELECT * FROM Material")
+    ).mappings().fetchall()
+    courses = db.session.execute(
+        text("SELECT * FROM Course")
+    ).mappings().fetchall()
+    return render_template('teacher_material.html', username=username, materials=materials, courses=courses)
 
 # Route trang home cho admin
 @app.route('/adminHome')
