@@ -1,5 +1,5 @@
 CREATE TABLE Users (
-    username VARCHAR2(100) PRIMARY KEY,
+    username VARCHAR2(50) PRIMARY KEY,
     password VARCHAR2(100) NOT NULL,
     user_role VARCHAR2(20) CHECK (user_role IN ('admin', 'student', 'teacher')) 
 );
@@ -18,7 +18,7 @@ CREATE TABLE Student (
     status VARCHAR(20) CHECK (status IN ('active', 'inactive', 'graduated', 'suspended')),
     enrollment_year INT,
     CONSTRAINT chk_student_enrollment_year CHECK (enrollment_year >= EXTRACT(YEAR FROM dob) + 18),
-    CONSTRAINT fk_student_user FOREIGN KEY (username) REFERENCES Users(username)
+    CONSTRAINT fk_student_user FOREIGN KEY (username) REFERENCES Users(username) ON DELETE CASCADE
 );
 
 CREATE TABLE Teacher (
@@ -32,7 +32,7 @@ CREATE TABLE Teacher (
     phone_number VARCHAR2(15) UNIQUE NOT NULL,
     address VARCHAR2(255),
     years_of_exp INT CHECK (years_of_exp >= 0),
-    CONSTRAINT fk_teacher_user FOREIGN KEY (username) REFERENCES Users(username)
+    CONSTRAINT fk_teacher_user FOREIGN KEY (username) REFERENCES Users(username)ON DELETE CASCADE
 );
 
 CREATE TABLE Course (

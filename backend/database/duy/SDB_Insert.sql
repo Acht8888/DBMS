@@ -11,14 +11,14 @@ INSERT INTO Users (username, password, user_role) VALUES ('tien_bui', '123', 'st
 INSERT INTO Users (username, password, user_role) VALUES ('phuong_do', '123', 'student');
 INSERT INTO Users (username, password, user_role) VALUES ('minh_ngoc', '123', 'student');
 INSERT INTO Users (username, password, user_role) VALUES ('hoang_ly', '123', 'student');
-INSERT INTO Users (username, password, user_role) VALUES ('teacher1', '123', 'student');
-INSERT INTO Users (username, password, user_role) VALUES ('teacher2', '123', 'student');
-INSERT INTO Users (username, password, user_role) VALUES ('teacher3', '123', 'student');
-INSERT INTO Users (username, password, user_role) VALUES ('teacher4', '123', 'student');
-INSERT INTO Users (username, password, user_role) VALUES ('teacher5', '123', 'student');
-INSERT INTO Users (username, password, user_role) VALUES ('teacher6', '123', 'student');
-INSERT INTO Users (username, password, user_role) VALUES ('teacher7', '123', 'student');
-INSERT INTO Users (username, password, user_role) VALUES ('teacher8', '123', 'student');
+INSERT INTO Users (username, password, user_role) VALUES ('teacher1', '123', 'teacher');
+INSERT INTO Users (username, password, user_role) VALUES ('teacher2', '123', 'teacher');
+INSERT INTO Users (username, password, user_role) VALUES ('teacher3', '123', 'teacher');
+INSERT INTO Users (username, password, user_role) VALUES ('teacher4', '123', 'teacher');
+INSERT INTO Users (username, password, user_role) VALUES ('teacher5', '123', 'teacher');
+INSERT INTO Users (username, password, user_role) VALUES ('teacher6', '123', 'teacher');
+INSERT INTO Users (username, password, user_role) VALUES ('teacher7', '123', 'teacher');
+INSERT INTO Users (username, password, user_role) VALUES ('teacher8', '123', 'teacher');
 COMMIT;
 
 -- Insert Students --

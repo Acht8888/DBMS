@@ -59,6 +59,7 @@
         <div class="flex justify-around p-4">
             <a href="/adminHome" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Home</a>
             <a href="#" class="text-white bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded">Student</a>
+            <a href="{{ url_for('studentAccountDetail', username=student.username, student_id=student.student_id) }}" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Account</a>
             <!-- Add other navigation links as needed -->
             <a href="/logout" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Logout</a>
         </div>

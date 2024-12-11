@@ -17,6 +17,12 @@ db = SQLAlchemy(app)
 PER_PAGE = 5  # Number of items per page for pagination
 
 # Models
+class Users(db.Model):
+    __tablename__ = 'users'
+    username = db.Column(db.String(50), primary_key=True)
+    password = db.Column(db.String(100), nullable=False)
+    user_role = db.Column(db.String(20), nullable=False)
+
 class Student(db.Model):
     __tablename__ = 'student'
     username = db.Column(db.String(50), primary_key=True)
@@ -147,6 +153,54 @@ def adminHome():
         return redirect(url_for('index'))
     return render_template('admin/adminHome.html', username=session['username'])
 
+# ====================
+# Account Management
+# ====================
+
+@app.route('/studentAccountDetail/<username>/<int:student_id>', methods=['GET'])
+def studentAccountDetail(username, student_id):
+    if 'username' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('index'))
+
+    student_user = Users.query.filter_by(username=username).first()
+    student = Student.query.filter_by(username=username, student_id=student_id).first()
+    if not student_user:
+        flash('Student account not found.', 'error')
+        return redirect(url_for('adminStudent'))
+
+    return render_template('admin/studentAccountDetail.html', student_user=student_user, student=student)
+
+@app.route('/changeStudentPassword', methods=['POST'])
+def changeStudentPassword():
+    username = request.form.get('username')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+
+    if not all([username, new_password, confirm_password]):
+        flash('All fields are required.', 'error')
+        return redirect(url_for('studentAccountDetail', username=username, student_id=request.form.get('student_id')))
+
+    if new_password != confirm_password:
+        flash('Passwords do not match.', 'error')
+        return redirect(url_for('studentAccountDetail', username=username, student_id=request.form.get('student_id')))
+
+    user = Users.query.filter_by(username=username).first()
+
+    if user:
+        user.password = new_password
+
+        try:
+            db.session.commit()
+            flash('Password updated successfully!', 'success')
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            flash('An error occurred while updating the password.', 'error')
+            app.logger.error(f"SQLAlchemyError while updating password: {e}")
+    else:
+        flash('User not found.', 'error')
+
+    return redirect(url_for('studentAccountDetail', username=username, student_id=request.form.get('student_id')))
 
 # ====================
 # Student Management
@@ -174,6 +228,7 @@ def addStudent():
     # Retrieve and validate form data
     student_id = validateInt(request.form.get('student_id'))
     username = request.form.get('username')
+    password = request.form.get('password')
     fname = request.form.get('fname')
     lname = request.form.get('lname')
     gender = request.form.get('gender')
@@ -186,7 +241,7 @@ def addStudent():
     enrollment_year = validateInt(request.form.get('enrollment_year'))
 
     # Validation Checks
-    if not all([student_id, username, fname, lname, gender, email, phone_number, gpa, enrollment_year]):
+    if not all([student_id, username, password, fname, lname, gender, email, phone_number, gpa, enrollment_year]):
         flash('Please fill in all required fields.', 'error')
         return redirect(url_for('adminStudent'))
 
@@ -218,15 +273,23 @@ def addStudent():
         enrollment_year=enrollment_year
     )
 
+    new_user = Users(
+        username=username,
+        password=password,
+        user_role="student"
+    )
+
     # Add to Database
     try:
+        db.session.add(new_user)
+        db.session.commit()
         db.session.add(new_student)
         db.session.commit()
         flash('Student added successfully!', 'success')
     except IntegrityError as ie:
         db.session.rollback()
         if 'unique constraint' in str(ie.orig).lower():
-            flash('Email or Phone Number already exists.', 'error')
+            flash('Username, Email or Phone Number already exists.', 'error')
         else:
             flash('Database Integrity Error: ' + str(ie.orig), 'error')
         app.logger.error(f"IntegrityError while adding student: {ie}")
@@ -256,10 +319,13 @@ def deleteStudent():
         return redirect(url_for('adminStudent'))
 
     student = Student.query.filter_by(username=username, student_id=student_id).first()
+    user = Users.query.filter_by(username=username).first()
 
     if student:
         try:
             db.session.delete(student)
+            db.session.commit()
+            db.session.delete(user)
             db.session.commit()
             flash('Student deleted successfully!', 'success')
         except SQLAlchemyError as e:
@@ -361,7 +427,6 @@ def studentDetail(username, student_id):
         return redirect(url_for('adminStudent'))
 
     return render_template('admin/studentDetail.html', student=student)
-
 
 # ====================
 # Teacher Management
