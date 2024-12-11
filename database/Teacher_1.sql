@@ -5,7 +5,7 @@ SELECT * FROM C##BTL.TEACHER_1_VIEW_UPDATE_EXAM;
 
 BEGIN
     UPDATE C##BTL.TEACHER_1_VIEW_UPDATE_EXAM
-    SET score = 90, grade = 'A'
+    SET score = 90, grade = 'A', status = 'Completed'
     WHERE student_id = 1;
     COMMIT;
 END;

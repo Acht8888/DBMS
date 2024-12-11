@@ -75,8 +75,8 @@ SELECT
     e.grading_date,
     co.course_name,
     tk.score,
-    tk.grade
-    
+    tk.grade,
+    tk.status
 FROM 
     Teacher t
 JOIN 
@@ -93,7 +93,7 @@ WHERE
     t.teacher_id = 1;
 
 GRANT SELECT ON TEACHER_1_VIEW_UPDATE_EXAM TO C##TEACHER_1;
-GRANT UPDATE(score, grade) ON TEACHER_1_VIEW_UPDATE_EXAM TO C##TEACHER_1;
+GRANT UPDATE(score, grade, status) ON TEACHER_1_VIEW_UPDATE_EXAM TO C##TEACHER_1;
 
 -- Teachers view and update material of their courses
 CREATE OR REPLACE VIEW TEACHER_1_VIEW_UPDATE_MATERIAL AS

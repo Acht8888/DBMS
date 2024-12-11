@@ -42,7 +42,7 @@ header {
 }
 
 .parent-info-table th {
-    background-color: #f2f2f2; /* Màu nền của tiêu đề */
+    background-color: #4CAF50; /* Màu nền của tiêu đề */
     color: #333; /* Màu chữ của tiêu đề */
     font-weight: bold; /* Đậm chữ cho tiêu đề */
 }
