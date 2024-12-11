@@ -1,10 +1,10 @@
-<!-- app/templates/admin/studentAccountDetail.html -->
+<!-- app/templates/admin/teacherAccountDetail.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Account Details - {{ student_user.username }}</title>
+    <title>Teacher Account Details - {{ teacher_user.username }}</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script>
         // Function to show flash messages
@@ -75,7 +75,7 @@
 
     <!-- Header Section -->
     <header class="bg-green-500 text-white py-4 text-center">
-        <h1 class="text-3xl font-semibold">Student Details</h1>
+        <h1 class="text-3xl font-semibold">Teacher Details</h1>
         <p class="text-lg">Welcome, {{ session['username'] }}</p>
     </header>
 
@@ -83,7 +83,7 @@
     <nav class="bg-gray-800">
         <div class="flex justify-around p-4">
             <a href="/adminHome" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Home</a>
-            <a href="{{ url_for('studentDetail', username=student.username, student_id=student.student_id) }}" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Student</a>
+            <a href="{{ url_for('teacherDetail', username=teacher.username, teacher_id=teacher.teacher_id) }}" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Teacher</a>
             <a href="#" class="text-white bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded">Account</a>
             <!-- Add other navigation links as needed -->
             <a href="/logout" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Logout</a>
@@ -96,17 +96,17 @@
             <h2 class="text-2xl font-semibold mb-4">Account Information</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <strong>Username:</strong> {{ student_user.username }}
+                    <strong>Username:</strong> {{ teacher_user.username }}
                 </div>
                 <div>
                     <strong>Password:</strong> ********
                 </div>
                 <div>
-                    <strong>User Role:</strong> {{ student_user.user_role.capitalize() }}
+                    <strong>User Role:</strong> {{ teacher_user.user_role.capitalize() }}
                 </div>
             </div>
             <div class="mt-6 flex justify-between">
-                <a href="/adminStudent" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Back to Student List</a>
+                <a href="/adminTeacher" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Back to Teacher List</a>
                 <!-- Add the Change Password button -->
                 <button onclick="openChangePasswordPopup()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Change Password</button>
             </div>
@@ -117,10 +117,10 @@
     <div id="changePasswordPopup" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50">
         <div class="bg-white p-8 rounded shadow-lg max-w-md w-full">
             <h3 class="text-2xl font-bold mb-4">Change Password</h3>
-            <form action="{{ url_for('changeStudentPassword') }}" method="POST">
-                <!-- Hidden Inputs to Pass Username and Student ID -->
-                <input type="hidden" name="username" value="{{ student_user.username }}">
-                <input type="hidden" name="student_id" value="{{ student.student_id }}">
+            <form action="{{ url_for('changeTeacherPassword') }}" method="POST">
+                <!-- Hidden Inputs to Pass Username and Teacher ID -->
+                <input type="hidden" name="username" value="{{ teacher_user.username }}">
+                <input type="hidden" name="teacher_id" value="{{ teacher.teacher_id }}">
                 
                 <div class="mb-4">
                     <label for="new_password" class="block text-sm font-medium text-gray-700">New Password</label>

@@ -1,44 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Home - School Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Smooth transition for background changes */
+        body {
+            transition: background-image 1s ease;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 m-0 p-0">
+<body 
+    class="min-h-screen bg-cover bg-no-repeat bg-center m-0 p-0" 
+    style="background-image: url('{{ url_for('static', filename='images/bg1.jpg') }}');">
 
     <!-- Header Section -->
-    <header class="bg-green-500 text-white py-4 text-center">
+    <header class="bg-green-500 bg-opacity-75 text-white py-4 text-center">
         <h1 class="text-3xl font-semibold">School Management System - Admin</h1>
         <p class="text-lg">Welcome, {{ username }}</p>
     </header>
 
     <!-- Navigation Bar -->
-    <nav class="bg-gray-800">
+    <nav class="bg-gray-800 bg-opacity-75">
         <div class="flex justify-around p-4">
             <a href="/adminHome" class="text-white bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded">Home</a>
-            <a href="/adminUserAccount" class="text-white hover:bg-gray-600 px-4 py-2 rounded">User Account</a>
             <a href="/adminCourse" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Courses</a>
-            <a href="/adminClass" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Classes</a>
-            <a href="/adminExam" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Exam & Grading</a>
             <a href="/adminStudent" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Student</a>
             <a href="/adminTeacher" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Teacher</a>
-            <a href="/adminClassroom" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Classroom</a>
             <a href="/logout" class="text-white hover:bg-gray-600 px-4 py-2 rounded">Logout</a>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="container mx-auto p-6">
-        
-
-    </div>
 
     <!-- Footer Section -->
-    <footer class="bg-gray-800 text-white text-center py-3 fixed bottom-0 w-full">
+    <footer class="bg-gray-800 bg-opacity-75 text-white text-center py-3 fixed bottom-0 w-full">
         <p>&copy; 2024 School Management System</p>
     </footer>
 
+    <!-- JavaScript for Background Rotation -->
+    <script>
+        // List of background images
+        const backgrounds = [
+            "{{ url_for('static', filename='images/bg1.jpg') }}",
+            "{{ url_for('static', filename='images/bg2.jpg') }}",
+            "{{ url_for('static', filename='images/bg3.jpg') }}"
+        ];
+
+        let currentIndex = 0; // Current background index
+        const changeInterval = 5000; // 5 seconds
+
+        // Function to change background
+        function changeBackground() {
+            currentIndex = (currentIndex + 1) % backgrounds.length; // Cycle through backgrounds
+            document.body.style.backgroundImage = `url('${backgrounds[currentIndex]}')`;
+        }
+
+        // Initial background setup
+        window.onload = function() {
+            setInterval(changeBackground, changeInterval);
+        };
+    </script>
 </body>
 </html>

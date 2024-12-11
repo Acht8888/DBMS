@@ -4,24 +4,33 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from datetime import datetime
 
+# Initialize Flask Application
 app = Flask(__name__)
 app.debug = True
 app.secret_key = 'your_secret_key'  # Necessary for session and flash
 
+# ====================
 # Database Configuration
+# ====================
 app.config['SQLALCHEMY_DATABASE_URI'] = 'oracle+cx_oracle://C##BTL:1234@localhost:1521/XE'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# ====================
 # Constants
+# ====================
 PER_PAGE = 5  # Number of items per page for pagination
 
+# ====================
 # Models
+# ====================
+
 class Users(db.Model):
     __tablename__ = 'users'
     username = db.Column(db.String(50), primary_key=True)
     password = db.Column(db.String(100), nullable=False)
     user_role = db.Column(db.String(20), nullable=False)
+
 
 class Student(db.Model):
     __tablename__ = 'student'
@@ -68,7 +77,10 @@ class Course(db.Model):
     course_description = db.Column(db.String(255))
 
 
+# ====================
 # Helper Functions
+# ====================
+
 def getPaginatedItems(query, page):
     """Helper function to paginate query results."""
     try:
@@ -104,11 +116,17 @@ def validateInt(value):
         return None
 
 
+# ====================
 # Routes
+# ====================
 
-# Home Route (Login Page)
+# --------------------
+# Authentication Routes
+# --------------------
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    """Home Route (Login Page)"""
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -137,28 +155,34 @@ def index():
     return render_template('index.html')
 
 
-# Logout Route
 @app.route('/logout')
 def logout():
+    """Logout Route"""
     session.pop('username', None)
     # flash('You have been logged out successfully.', 'success')
     return redirect(url_for('index'))
 
 
-# Admin Home
+# --------------------
+# Admin Routes
+# --------------------
+
 @app.route('/adminHome')
 def adminHome():
+    """Admin Home"""
     if 'username' not in session:
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('index'))
     return render_template('admin/adminHome.html', username=session['username'])
 
-# ====================
-# Account Management
-# ====================
+
+# --------------------
+# Account Management Routes
+# --------------------
 
 @app.route('/studentAccountDetail/<username>/<int:student_id>', methods=['GET'])
 def studentAccountDetail(username, student_id):
+    """Student Account Detail"""
     if 'username' not in session:
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('index'))
@@ -171,8 +195,10 @@ def studentAccountDetail(username, student_id):
 
     return render_template('admin/studentAccountDetail.html', student_user=student_user, student=student)
 
+
 @app.route('/changeStudentPassword', methods=['POST'])
 def changeStudentPassword():
+    """Change Student Password"""
     username = request.form.get('username')
     new_password = request.form.get('new_password')
     confirm_password = request.form.get('confirm_password')
@@ -202,12 +228,61 @@ def changeStudentPassword():
 
     return redirect(url_for('studentAccountDetail', username=username, student_id=request.form.get('student_id')))
 
-# ====================
-# Student Management
-# ====================
+@app.route('/teacherAccountDetail/<username>/<int:teacher_id>', methods=['GET'])
+def teacherAccountDetail(username, teacher_id):
+    """Teacher Account Detail"""
+    if 'username' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('index'))
+
+    teacher_user = Users.query.filter_by(username=username).first()
+    teacher = Teacher.query.filter_by(username=username, teacher_id=teacher_id).first()
+    if not teacher_user:
+        flash('Teacher account not found.', 'error')
+        return redirect(url_for('adminTeacher'))
+
+    return render_template('admin/teacherAccountDetail.html', teacher_user=teacher_user, teacher=teacher)
+
+@app.route('/changeTeacherPassword', methods=['POST'])
+def changeTeacherPassword():
+    """Change Teacher Password"""
+    username = request.form.get('username')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+
+    if not all([username, new_password, confirm_password]):
+        flash('All fields are required.', 'error')
+        return redirect(url_for('teacherAccountDetail', username=username, teacher_id=request.form.get('teacher_id')))
+
+    if new_password != confirm_password:
+        flash('Passwords do not match.', 'error')
+        return redirect(url_for('teacherAccountDetail', username=username, teacher_id=request.form.get('teacher_id')))
+
+    user = Users.query.filter_by(username=username).first()
+
+    if user:
+        user.password = new_password
+
+        try:
+            db.session.commit()
+            flash('Password updated successfully!', 'success')
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            flash('An error occurred while updating the password.', 'error')
+            app.logger.error(f"SQLAlchemyError while updating password: {e}")
+    else:
+        flash('User not found.', 'error')
+
+    return redirect(url_for('teacherAccountDetail', username=username, teacher_id=request.form.get('teacher_id')))
+
+
+# --------------------
+# Student Management Routes
+# --------------------
 
 @app.route('/adminStudent', methods=['GET'])
 def adminStudent():
+    """Admin Student List"""
     if 'username' not in session:
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('index'))
@@ -221,6 +296,7 @@ def adminStudent():
 
 @app.route('/addStudent', methods=['POST'])
 def addStudent():
+    """Add New Student"""
     if 'username' not in session:
         flash('Please log in to perform this action.', 'error')
         return redirect(url_for('index'))
@@ -307,6 +383,7 @@ def addStudent():
 
 @app.route('/deleteStudent', methods=['POST'])
 def deleteStudent():
+    """Delete Student"""
     if 'username' not in session:
         flash('Please log in to perform this action.', 'error')
         return redirect(url_for('index'))
@@ -340,6 +417,7 @@ def deleteStudent():
 
 @app.route('/editStudent', methods=['POST'])
 def editStudent():
+    """Edit Student Details"""
     if 'username' not in session:
         flash('Please log in to perform this action.', 'error')
         return redirect(url_for('index'))
@@ -416,6 +494,7 @@ def editStudent():
 
 @app.route('/student/<username>/<int:student_id>', methods=['GET'])
 def studentDetail(username, student_id):
+    """Student Detail View"""
     if 'username' not in session:
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('index'))
@@ -428,12 +507,14 @@ def studentDetail(username, student_id):
 
     return render_template('admin/studentDetail.html', student=student)
 
-# ====================
-# Teacher Management
-# ====================
+
+# --------------------
+# Teacher Management Routes
+# --------------------
 
 @app.route('/adminTeacher', methods=['GET'])
 def adminTeacher():
+    """Admin Teacher List"""
     if 'username' not in session:
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('index'))
@@ -447,6 +528,7 @@ def adminTeacher():
 
 @app.route('/addTeacher', methods=['POST'])
 def addTeacher():
+    """Add New Teacher"""
     if 'username' not in session:
         flash('Please log in to perform this action.', 'error')
         return redirect(url_for('index'))
@@ -454,6 +536,7 @@ def addTeacher():
     # Retrieve and validate form data
     teacher_id = validateInt(request.form.get('teacher_id'))
     username = request.form.get('username')
+    password = request.form.get('password')
     fname = request.form.get('fname')
     lname = request.form.get('lname')
     gender = request.form.get('gender')
@@ -464,19 +547,15 @@ def addTeacher():
     years_of_exp = validateInt(request.form.get('years_of_exp'))
 
     # Validation Checks
-    if not all([teacher_id, username, fname, lname, gender, email, phone_number, years_of_exp]):
+    if not all([teacher_id, username, password, fname, lname, gender, email, phone_number, years_of_exp]):
         flash('Please fill in all required fields.', 'error')
-        return redirect(url_for('adminTeacher'))
-
-    if gender not in ['M', 'F']:
-        flash("Invalid gender. Please select 'M' for Male or 'F' for Female.", 'error')
         return redirect(url_for('adminTeacher'))
 
     if years_of_exp < 0:
         flash('Years of Experience cannot be negative.', 'error')
         return redirect(url_for('adminTeacher'))
 
-    if request.form.get('dob') and not dob:
+    if not dob:
         flash('Invalid date format for Date of Birth.', 'error')
         return redirect(url_for('adminTeacher'))
 
@@ -494,8 +573,16 @@ def addTeacher():
         years_of_exp=years_of_exp
     )
 
+    new_user = Users(
+        username=username,
+        password=password,
+        user_role="teacher"
+    )
+
     # Add to Database
     try:
+        db.session.add(new_user)
+        db.session.commit()
         db.session.add(new_teacher)
         db.session.commit()
         flash('Teacher added successfully!', 'success')
@@ -522,6 +609,7 @@ def addTeacher():
 
 @app.route('/deleteTeacher', methods=['POST'])
 def deleteTeacher():
+    """Delete Teacher"""
     if 'username' not in session:
         flash('Please log in to perform this action.', 'error')
         return redirect(url_for('index'))
@@ -534,10 +622,13 @@ def deleteTeacher():
         return redirect(url_for('adminTeacher'))
 
     teacher = Teacher.query.filter_by(username=username, teacher_id=teacher_id).first()
+    user = Users.query.filter_by(username=username).first()
 
     if teacher:
         try:
             db.session.delete(teacher)
+            db.session.commit()
+            db.session.delete(user)
             db.session.commit()
             flash('Teacher deleted successfully!', 'success')
         except SQLAlchemyError as e:
@@ -552,6 +643,7 @@ def deleteTeacher():
 
 @app.route('/editTeacher', methods=['POST'])
 def editTeacher():
+    """Edit Teacher Details"""
     if 'username' not in session:
         flash('Please log in to perform this action.', 'error')
         return redirect(url_for('index'))
@@ -573,15 +665,11 @@ def editTeacher():
         flash('Please fill in all required fields.', 'error')
         return redirect(url_for('adminTeacher'))
 
-    if gender not in ['M', 'F']:
-        flash("Invalid gender. Please select 'M' for Male or 'F' for Female.", 'error')
-        return redirect(url_for('adminTeacher'))
-
     if years_of_exp < 0:
         flash('Years of Experience cannot be negative.', 'error')
         return redirect(url_for('adminTeacher'))
 
-    if request.form.get('dob') and not dob:
+    if not dob:
         flash('Invalid date format for Date of Birth.', 'error')
         return redirect(url_for('adminTeacher'))
 
@@ -626,6 +714,7 @@ def editTeacher():
 
 @app.route('/teacher/<username>/<int:teacher_id>', methods=['GET'])
 def teacherDetail(username, teacher_id):
+    """Teacher Detail View"""
     if 'username' not in session:
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('index'))
@@ -639,12 +728,13 @@ def teacherDetail(username, teacher_id):
     return render_template('admin/teacherDetail.html', teacher=teacher)
 
 
-# ====================
-# Course Management
-# ====================
+# --------------------
+# Course Management Routes
+# --------------------
 
 @app.route('/adminCourse', methods=['GET'])
 def adminCourse():
+    """Admin Course List"""
     if 'username' not in session:
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('index'))
@@ -658,6 +748,7 @@ def adminCourse():
 
 @app.route('/addCourse', methods=['POST'])
 def addCourse():
+    """Add New Course"""
     if 'username' not in session:
         flash('Please log in to perform this action.', 'error')
         return redirect(url_for('index'))
@@ -705,6 +796,7 @@ def addCourse():
 
 @app.route('/deleteCourse', methods=['POST'])
 def deleteCourse():
+    """Delete Course"""
     if 'username' not in session:
         flash('Please log in to perform this action.', 'error')
         return redirect(url_for('index'))
@@ -734,6 +826,7 @@ def deleteCourse():
 
 @app.route('/editCourse', methods=['POST'])
 def editCourse():
+    """Edit Course Details"""
     if 'username' not in session:
         flash('Please log in to perform this action.', 'error')
         return redirect(url_for('index'))
@@ -779,12 +872,13 @@ def editCourse():
     return redirect(url_for('adminCourse'))
 
 
-# ====================
-# Additional Routes
-# ====================
+# --------------------
+# Teacher and Student Home Routes
+# --------------------
 
 @app.route('/teacherHome')
 def teacherHome():
+    """Teacher Home"""
     if 'username' not in session:
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('index'))
@@ -794,6 +888,7 @@ def teacherHome():
 
 @app.route('/studentHome')
 def studentHome():
+    """Student Home"""
     if 'username' not in session:
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('index'))
@@ -801,6 +896,8 @@ def studentHome():
     return render_template('student/studentHome.html', username=session['username'])
 
 
+# ====================
 # Run the Application
+# ====================
 if __name__ == '__main__':
     app.run(debug=True)
