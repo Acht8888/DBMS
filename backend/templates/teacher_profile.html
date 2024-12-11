@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Information - Teacher</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher_profile.css') }}">
+</head>
+<body>
+
+    <header>
+        <h1>Personal Information</h1>
+        <p> Welcome! Teacher </p>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <a href="/teacherHome">Home</a> <!-- Button to go back to home -->
+        <a href="/teacher_profile">Personal Information</a>
+        <a href="/teacher_course">Courses</a>
+        <a href="/teacher_student">Students</a>
+        <a href="/teacher_timetable">Timetable</a>
+        <a href="/teacher_material">Study Materials</a>
+        <a href="/logout">Logout</a>
+    </nav>
+
+    <div class="profile-container">
+        {% if teacher %}
+        <table class="profile-table">
+            <tr>
+                <th>Teacher ID</th>
+                <td>{{ teacher.teacher_id }}</td>
+            </tr>
+            <tr>
+                <th>First Name</th>
+                <td>{{ teacher.fname }}</td>
+            </tr>
+            <tr>
+                <th>Last Name</th>
+                <td>{{ teacher.lname }}</td>
+            </tr>
+            <tr>
+                <th>Date of Birth</th>
+                <td>{{ teacher.dob.strftime('%Y/%m/%d') if teacher.dob else 'No data available' }}</td>
+            </tr>
+            <tr>
+                <th>Gender</th>
+                <td>{{ teacher.gender }}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{ teacher.email }}</td>
+            </tr>
+            <tr>
+                <th>Phone Number</th>
+                <td>{{ teacher.phone_number }}</td>
+            </tr>
+            <tr>
+                <th>Address</th>
+                <td>{{ teacher.address }}</td>
+            </tr>
+            <tr>
+                <th>Years of Experience</th>
+                <td>{{ teacher.years_of_exp }}</td>
+            </tr>
+        </table>
+        {% else %}
+        <p>No teacher information found.</p>
+        {% endif %}
+    </div>
+
+
+
+</body>
+</html>

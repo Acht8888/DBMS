@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from datetime import datetime
+import logging
 
 # Initialize Flask Application
 app = Flask(__name__)
@@ -1165,6 +1166,263 @@ def grades():
     else:
         return redirect('/')
 
+# --------------------
+# Teacher Routes
+# --------------------
+
+# Route trang home cho giáo viên
+@app.route('/teacherHome')
+def teacherHome():
+    if 'username' in session:
+        return render_template('teacherHome.html', username=session['username'])
+    else:
+        return redirect('/')
+
+# Route for teacher profile
+@app.route('/teacher_profile')
+def teacher_Profile():
+    if 'username' in session:
+        username = session['username']
+        logging.debug(f"Username in session: {username}")
+
+        # Find teacher by username in session
+        teacher = db.session.execute(
+            text("SELECT * FROM teacher WHERE username = :username"),
+            {'username': username}
+        ).mappings().fetchone()
+        if teacher:
+            logging.debug(f"Teacher found: {teacher}")
+            return render_template('teacher_profile.html', teacher=teacher)
+        else:
+            logging.debug("Teacher not found")
+            return render_template('teacher_profile.html', error="Không tìm thấy thông tin giáo viên.")
+    else:
+        logging.debug("Username not in session")
+        return redirect('/')    
+
+
+@app.route('/teacher_course')
+def teacher_course():
+    if 'username' in session:
+        # Lấy tất cả các bản ghi trong bảng Course
+        username = session['username']
+        
+        courses = db.session.execute(
+            text("SELECT * FROM Course")
+        ).mappings().fetchall()
+        if courses:
+            return render_template('teacher_course.html', username=session['username'], courses=courses)
+        else:
+            return render_template('teacher_course.html', error="Không tìm thấy khóa học.")
+    else:
+        return redirect('/')
+
+@app.route('/teacher_timetable')
+def teacher_timetable():
+    if 'username' in session:
+        username = session['username']
+        
+        # Lấy thông tin giáo viên
+        teacher = db.session.execute(
+            text("SELECT teacher_id FROM teacher WHERE username = :username"),
+            {'username': username}
+        ).mappings().fetchone()
+
+        if not teacher:
+            return render_template('teacher_timetable.html', error="Không tìm thấy thông tin giáo viên.")
+
+        # Lấy thời khóa biểu của giáo viên
+        timetable = db.session.execute(
+            text(""" 
+                SELECT 
+                    t.teacher_id,
+                    t.fname || ' ' || t.lname AS teacher_name,
+                    co.course_id,
+                    co.course_name,
+                    c.class_id,
+                    ti.room,
+                    ti.building,
+                    ti.day_of_week,
+                    TO_CHAR(ti.start_time, 'HH24:MI:SS') AS start_time,
+                    TO_CHAR(ti.end_time, 'HH24:MI:SS') AS end_time
+                FROM 
+                    Teacher t
+                JOIN 
+                    Class c ON t.teacher_id = c.teacher_id
+                JOIN 
+                    Course co ON c.course_id = co.course_id
+                JOIN
+                    Time ti ON c.course_id = ti.course_id AND c.class_id = ti.class_id
+                WHERE 
+                    t.teacher_id = :teacher_id
+            """),
+            {'teacher_id': teacher['teacher_id']}
+        ).mappings().fetchall()
+
+        return render_template('teacher_timetable.html', timetable=timetable)
+    else:
+        return redirect('/')
+
+@app.route('/teacher_student')
+def teacher_student():
+    if 'username' in session:
+        username = session['username']
+        
+        # Lấy thông tin giáo viên
+        teacher = db.session.execute(
+            text("SELECT teacher_id FROM teacher WHERE username = :username"),
+            {'username': username}
+        ).mappings().fetchone()
+
+        if not teacher:
+            return render_template('teacher_student.html', error="Không tìm thấy thông tin giáo viên.")
+
+        # Lấy danh sách sinh viên mà giáo viên đang dạy
+        students = db.session.execute(
+            text("""
+                SELECT 
+                    s.student_id, s.fname, s.lname, s.gender, s.dob, s.email, 
+                    s.phone_number, s.address, s.gpa, s.status, s.enrollment_year,
+                    c.course_id, c.class_id, co.course_name
+                FROM 
+                    Student s
+                JOIN 
+                    Attends a ON s.student_id = a.student_id
+                JOIN 
+                    Class c ON a.course_id = c.course_id AND a.class_id = c.class_id
+                JOIN 
+                    Course co ON c.course_id = co.course_id
+                WHERE 
+                    c.teacher_id = :teacher_id
+            """),
+            {'teacher_id': teacher['teacher_id']}
+        ).mappings().fetchall()
+
+        return render_template('teacher_student.html', students=students)
+    else:
+        return redirect('/')
+
+
+@app.route('/teacher_material', methods=['GET', 'POST'])
+def teacher_material():
+    if 'username' in session:
+        username = session['username']
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+        logging.debug(f"Action: {action}")
+
+        if action == 'add':
+            # Retrieve and validate form data
+            material_id = request.form.get('material_id')
+            course_id = request.form.get('course_id')
+            material_type = request.form.get('type')
+            title = request.form.get('title')
+            upload_date_str = request.form.get('upload_date')
+            author = request.form.get('author')
+            upload_date = datetime.strptime(upload_date_str, '%Y-%m-%d').date()
+
+            # Add to Database
+            try:
+                db.session.execute(
+                    text("""
+                        INSERT INTO Material (material_id, course_id, type, title, upload_date, author)
+                        VALUES (:material_id, :course_id, :type, :title, :upload_date, :author)
+                    """),
+                    {'material_id': material_id, 'course_id': course_id, 'type': material_type, 'title': title, 'upload_date': upload_date, 'author': author}
+                )
+                db.session.commit()
+                flash('Material added successfully!', 'success')
+            except IntegrityError as ie:
+                db.session.rollback()
+                if 'unique constraint' in str(ie.orig).lower():
+                    flash('Material ID already exists.', 'error')
+                else:
+                    flash('Database Integrity Error: ' + str(ie.orig), 'error')
+                app.logger.error(f"IntegrityError while adding material: {ie}")
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                flash('An error occurred while adding the material.', 'error')
+                app.logger.error(f"SQLAlchemyError while adding material: {e}")
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Unexpected error: {e}', 'error')
+                app.logger.error(f"Unexpected error while adding material: {e}")
+
+            return redirect(url_for('teacher_material'))
+
+        elif action == 'update':
+            # Retrieve and validate form data
+            material_id = request.form.get('material_id')
+            course_id = request.form.get('course_id')
+            material_type = request.form.get('type')
+            title = request.form.get('title')
+            upload_date_str = request.form.get('upload_date')
+            author = request.form.get('author')
+
+            upload_date = datetime.strptime(upload_date_str, '%Y-%m-%d').date()
+
+            # Update Database
+            try:
+                db.session.execute(
+                    text("""
+                        UPDATE Material
+                        SET course_id = :course_id, type = :type, title = :title, author = :author, upload_date = :upload_date
+                        WHERE material_id = :material_id
+                    """),
+                    {'course_id': course_id, 'type': material_type, 'title': title, 'author': author, 'upload_date': upload_date, 'material_id': material_id}
+                )
+                db.session.commit()
+                flash('Material updated successfully!', 'success')
+            except IntegrityError as ie:
+                db.session.rollback()
+                flash('Database Integrity Error: ' + str(ie.orig), 'error')
+                app.logger.error(f"IntegrityError while updating material: {ie}")
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                flash('An error occurred while updating the material.', 'error')
+                app.logger.error(f"SQLAlchemyError while updating material: {e}")
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Unexpected error: {e}', 'error')
+                app.logger.error(f"Unexpected error while updating material: {e}")
+
+            return redirect(url_for('teacher_material'))
+        
+        elif action == 'delete':
+            # Retrieve and validate form data
+            material_id = request.form.get('material_id')
+
+            # Delete from Database
+            try:
+                db.session.execute(
+                    text("DELETE FROM Material WHERE material_id = :material_id"),
+                    {'material_id': material_id}
+                )
+                db.session.commit()
+                flash('Material deleted successfully!', 'success')
+            except IntegrityError as ie:
+                db.session.rollback()
+                flash('Database Integrity Error: ' + str(ie.orig), 'error')
+                app.logger.error(f"IntegrityError while deleting material: {ie}")
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                flash('An error occurred while deleting the material.', 'error')
+                app.logger.error(f"SQLAlchemyError while deleting material: {e}")
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Unexpected error: {e}', 'error')
+                app.logger.error(f"Unexpected error while deleting material: {e}")
+
+            return redirect(url_for('teacher_material'))
+
+    materials = db.session.execute(
+        text("SELECT * FROM Material")
+    ).mappings().fetchall()
+    courses = db.session.execute(
+        text("SELECT * FROM Course")
+    ).mappings().fetchall()
+    return render_template('teacher_material.html', username=username, materials=materials, courses=courses)
 
 # ====================
 # Run the Application
